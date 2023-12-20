@@ -16,10 +16,7 @@ import com.example.common.utils.PageUtils;
 import com.example.common.utils.R;
 
 
-
 /**
- * 
- *
  * @author FlowerBuried
  * @email 2842511561@qq.com
  * @date 2023-12-19 13:46:43
@@ -34,7 +31,7 @@ public class MemberStatisticsInfoController {
      * 列表
      */
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params){
+    public R list(@RequestParam Map<String, Object> params) {
         PageUtils page = memberStatisticsInfoService.queryPage(params);
 
         return R.ok().put("page", page);
@@ -45,8 +42,8 @@ public class MemberStatisticsInfoController {
      * 信息
      */
     @RequestMapping("/info/{id}")
-    public R info(@PathVariable("id") Long id){
-		MemberStatisticsInfoEntity memberStatisticsInfo = memberStatisticsInfoService.getById(id);
+    public R info(@PathVariable("id") Long id) {
+        MemberStatisticsInfoEntity memberStatisticsInfo = memberStatisticsInfoService.getById(id);
 
         return R.ok().put("memberStatisticsInfo", memberStatisticsInfo);
     }
@@ -55,8 +52,8 @@ public class MemberStatisticsInfoController {
      * 保存
      */
     @RequestMapping("/save")
-    public R save(@RequestBody MemberStatisticsInfoEntity memberStatisticsInfo){
-		memberStatisticsInfoService.save(memberStatisticsInfo);
+    public R save(@RequestBody MemberStatisticsInfoEntity memberStatisticsInfo) {
+        memberStatisticsInfoService.save(memberStatisticsInfo);
 
         return R.ok();
     }
@@ -65,8 +62,8 @@ public class MemberStatisticsInfoController {
      * 修改
      */
     @RequestMapping("/update")
-    public R update(@RequestBody MemberStatisticsInfoEntity memberStatisticsInfo){
-		memberStatisticsInfoService.updateById(memberStatisticsInfo);
+    public R update(@RequestBody MemberStatisticsInfoEntity memberStatisticsInfo) {
+        memberStatisticsInfoService.updateById(memberStatisticsInfo);
 
         return R.ok();
     }
@@ -75,8 +72,8 @@ public class MemberStatisticsInfoController {
      * 删除
      */
     @RequestMapping("/delete")
-    public R delete(@RequestBody Long[] ids){
-		memberStatisticsInfoService.removeByIds(Arrays.asList(ids));
+    public R delete(@RequestBody Long[] ids) {
+        memberStatisticsInfoService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
     }

@@ -5,11 +5,12 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
 import java.util.Date;
+
 import lombok.Data;
 
 /**
  * ����������ʷ��¼
- * 
+ *
  * @author FlowerBuried
  * @email 2842511561@qq.com
  * @date 2023-12-19 13:57:24
@@ -17,32 +18,32 @@ import lombok.Data;
 @Data
 @TableName("oms_order_operate_history")
 public class OrderOperateHistoryEntity implements Serializable {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * id
-	 */
-	@TableId
-	private Long id;
-	/**
-	 * ����id
-	 */
-	private Long orderId;
-	/**
-	 * ������[�û���ϵͳ����̨����Ա]
-	 */
-	private String operateMan;
-	/**
-	 * ����ʱ��
-	 */
-	private Date createTime;
-	/**
-	 * ����״̬��0->�����1->��������2->�ѷ�����3->����ɣ�4->�ѹرգ�5->��Ч������
-	 */
-	private Integer orderStatus;
-	/**
-	 * ��ע
-	 */
-	private String note;
+    /**
+     * id
+     */
+    @TableId
+    private Long id;
+    /**
+     * ����id
+     */
+    private Long orderId;
+    /**
+     * ������[�û���ϵͳ����̨����Ա]
+     */
+    private String operateMan;
+    /**
+     * ����ʱ��
+     */
+    private Date createTime;
+    /**
+     * ����״̬��0->�����1->��������2->�ѷ�����3->����ɣ�4->�ѹرգ�5->��Ч������
+     */
+    private Integer orderStatus;
+    /**
+     * ��ע
+     */
+    private String note;
 
 }

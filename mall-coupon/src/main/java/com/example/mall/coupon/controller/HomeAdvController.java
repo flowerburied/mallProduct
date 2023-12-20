@@ -16,10 +16,7 @@ import com.example.common.utils.PageUtils;
 import com.example.common.utils.R;
 
 
-
 /**
- * 
- *
  * @author FlowerBuried
  * @email 2842511561@qq.com
  * @date 2023-12-19 13:01:27
@@ -34,7 +31,7 @@ public class HomeAdvController {
      * 列表
      */
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params){
+    public R list(@RequestParam Map<String, Object> params) {
         PageUtils page = homeAdvService.queryPage(params);
 
         return R.ok().put("page", page);
@@ -45,8 +42,8 @@ public class HomeAdvController {
      * 信息
      */
     @RequestMapping("/info/{id}")
-    public R info(@PathVariable("id") Long id){
-		HomeAdvEntity homeAdv = homeAdvService.getById(id);
+    public R info(@PathVariable("id") Long id) {
+        HomeAdvEntity homeAdv = homeAdvService.getById(id);
 
         return R.ok().put("homeAdv", homeAdv);
     }
@@ -55,8 +52,8 @@ public class HomeAdvController {
      * 保存
      */
     @RequestMapping("/save")
-    public R save(@RequestBody HomeAdvEntity homeAdv){
-		homeAdvService.save(homeAdv);
+    public R save(@RequestBody HomeAdvEntity homeAdv) {
+        homeAdvService.save(homeAdv);
 
         return R.ok();
     }
@@ -65,8 +62,8 @@ public class HomeAdvController {
      * 修改
      */
     @RequestMapping("/update")
-    public R update(@RequestBody HomeAdvEntity homeAdv){
-		homeAdvService.updateById(homeAdv);
+    public R update(@RequestBody HomeAdvEntity homeAdv) {
+        homeAdvService.updateById(homeAdv);
 
         return R.ok();
     }
@@ -75,8 +72,8 @@ public class HomeAdvController {
      * 删除
      */
     @RequestMapping("/delete")
-    public R delete(@RequestBody Long[] ids){
-		homeAdvService.removeByIds(Arrays.asList(ids));
+    public R delete(@RequestBody Long[] ids) {
+        homeAdvService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
     }

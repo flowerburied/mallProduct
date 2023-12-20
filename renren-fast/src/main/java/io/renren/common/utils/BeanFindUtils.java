@@ -18,8 +18,9 @@ public class BeanFindUtils {
 
     /**
      * 查询指定了特定注解的类
+     *
      * @param basePackage 类所存放的包名
-     * @param annotation 特定的注解
+     * @param annotation  特定的注解
      * @return 目标类
      */
     public static Set<Class<?>> findAnnotation(String basePackage, Class<? extends Annotation> annotation) {
@@ -30,7 +31,8 @@ public class BeanFindUtils {
 
     /**
      * 查询实现了特定接口的类
-     * @param basePackage 类所存放的包名
+     *
+     * @param basePackage    类所存放的包名
      * @param interfaceClass 特定的接口
      * @return 目标类
      */
@@ -55,8 +57,8 @@ public class BeanFindUtils {
                 .collect(Collectors.toSet());
     }
 
-    private static ClassPathScanningCandidateComponentProvider getInstance(){
-        if (scanner == null){
+    private static ClassPathScanningCandidateComponentProvider getInstance() {
+        if (scanner == null) {
             scanner = new ClassPathScanningCandidateComponentProvider(false);
         }
         return scanner;

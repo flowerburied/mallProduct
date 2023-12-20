@@ -6,11 +6,10 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.Date;
+
 import lombok.Data;
 
 /**
- * 
- * 
  * @author FlowerBuried
  * @email 2842511561@qq.com
  * @date 2023-12-19 13:01:27
@@ -18,28 +17,28 @@ import lombok.Data;
 @Data
 @TableName("sms_spu_bounds")
 public class SpuBoundsEntity implements Serializable {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * id
-	 */
-	@TableId
-	private Long id;
-	/**
-	 * 
-	 */
-	private Long spuId;
-	/**
-	 * 
-	 */
-	private BigDecimal growBounds;
-	/**
-	 * 
-	 */
-	private BigDecimal buyBounds;
-	/**
-	 * 
-	 */
-	private Integer work;
+    /**
+     * id
+     */
+    @TableId
+    private Long id;
+    /**
+     *
+     */
+    private Long spuId;
+    /**
+     *
+     */
+    private BigDecimal growBounds;
+    /**
+     *
+     */
+    private BigDecimal buyBounds;
+    /**
+     *
+     */
+    private Integer work;
 
 }

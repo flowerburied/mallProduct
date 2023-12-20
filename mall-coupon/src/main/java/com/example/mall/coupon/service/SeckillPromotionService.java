@@ -7,8 +7,6 @@ import com.example.mall.coupon.entity.SeckillPromotionEntity;
 import java.util.Map;
 
 /**
- * 
- *
  * @author FlowerBuried
  * @email 2842511561@qq.com
  * @date 2023-12-19 13:01:27
