@@ -59,6 +59,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<CategoryEntity> children = all.stream().filter((menus) -> {
             return menus.getParentCid() == root.getCatId();
         }).map((categoryEntity -> {
+
 //            Find submenus
             categoryEntity.setChildren(setChildren(categoryEntity, all));
             return categoryEntity;
