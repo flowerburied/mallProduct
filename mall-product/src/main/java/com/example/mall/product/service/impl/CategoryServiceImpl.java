@@ -42,10 +42,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<CategoryEntity> categoryEntities = baseMapper.selectList(null);
 //        Convert to a father son tree structure
         List<CategoryEntity> collect = categoryEntities.stream().filter((menus) -> {
-            System.out.println(menus.getParentCid() == 0);
+//            System.out.println(menus.getParentCid() == 0);
             return menus.getParentCid() == 0;
         }).map((item) -> {
-            System.out.println(item);
+//            System.out.println(item);
             item.setChildren(setChildren(item, categoryEntities));
             return item;
         }).sorted((item1, item2) -> {

@@ -67,6 +67,7 @@ public class CategoryController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody CategoryEntity category) {
+        System.out.println("ssss"+category);
         categoryService.save(category);
 
         return R.ok();
