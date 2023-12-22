@@ -14,7 +14,8 @@ import org.springframework.web.server.ServerWebExchange;
 public class MallCorsConfiguration {
 
     @Bean
-    public CorsWebFilter corsWebFilter(){
+    public CorsWebFilter corsWebFilter() {
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 //        CorsConfigurationSource configurationSource =new CorsConfigurationSource() {
 //            @Override
@@ -22,7 +23,8 @@ public class MallCorsConfiguration {
 //                return null;
 //            }
 //        }
-        CorsConfiguration corsConfiguration=new CorsConfiguration();
+        System.out.println("url===" + source);
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
 
 //        Configure cross domain
         corsConfiguration.addAllowedHeader("*");
@@ -31,7 +33,7 @@ public class MallCorsConfiguration {
         corsConfiguration.setAllowCredentials(true);
 
 
-        source.registerCorsConfiguration("/**",corsConfiguration);
+        source.registerCorsConfiguration("/**", corsConfiguration);
         return new CorsWebFilter(source);
     }
 }
