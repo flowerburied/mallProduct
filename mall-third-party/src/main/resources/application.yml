@@ -1,0 +1,19 @@
+spring:
+  cloud:
+    alicloud:
+      access-key: STS.NTgWD3K7RsVLBnZEW1EiX62Zf
+      secret-key: 3aFmxxC52S3stRjrrGqTpnDnCjub5xmMJwX9P9n6FJXC
+      oss:
+        endpoint: oss-cn-beijing.aliyuncs.com
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+server:
+  port: 30000
+
+#alibaba:
+#  cloud:
+#    access-key: STS.NTgWD3K7RsVLBnZEW1EiX62Zf
+#    secret-key: 3aFmxxC52S3stRjrrGqTpnDnCjub5xmMJwX9P9n6FJXC
+#    oss:
+#      endpoint: oss-cn-beijing.aliyuncs.com
