@@ -1,10 +1,12 @@
 spring:
   cloud:
     alicloud:
-      access-key: STS.NTgWD3K7RsVLBnZEW1EiX62Zf
-      secret-key: 3aFmxxC52S3stRjrrGqTpnDnCjub5xmMJwX9P9n6FJXC
+      access-key: STS.NSxkxw79rRUEDvPHWzQ2oyh74
+      secret-key: 8hLCzHeJKRjGYro8Meu9Skvw87ykhfQSWAivRdyFtxZi
       oss:
         endpoint: oss-cn-beijing.aliyuncs.com
+        sts:
+          security-token: CAIS9wF1q6Ft5B2yfSjIr5fnGNPAte1D+ZCuTmXDlEwmaL5hrp/trzz2IHhMeXVrBe8ct/8zn2hY7fYdlqx6T55OSBQ3kgihT80Fnzm6aq/t5uaXj9Vd+rDHdEGXDxnkprywB8zyUNLafNq0dlnAjVUd6LDmdDKkLTfHWN/z/vwBVNkMWRSiZjdrHcpfIhAYyPUXLnzML/2gQHWI6yjydBM35VUs1j0hsvjhnpLGukPk4QekmrNPlePYOYO5asRgBpB7Xuqu0fZ+Hqi7i3YItkQRqPgs1fcYom+X5YHCGSJU6hGCdvLO9dFyJxM8faUgBaNevGFhcV+STRC4GoABQW+jVtwuoJB43YOWlrNtPRhrxQdeVX0/X/owVMbFPTQjHdSaMfd0DF5213CxKTuwdCxvC/6ZVMJQhKmQ9sjDcjQbbRs+pcAix7gcDUj8Frkt4AWDSObpAt7A0p1W1QrX1yS2JL0XOMPsCrV0XK4SabTZFvn2Ht1dztukLip44UIgAA==
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
