@@ -2,14 +2,14 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: test_route
-          uri: https://www.baidu.com/
-          predicates:
-            - Query=url,baidu
-        - id: qq_route
-          uri: https://im.qq.com/index/
-          predicates:
-            - Query=url,qq
+#        - id: test_route
+#          uri: https://www.baidu.com/
+#          predicates:
+#            - Query=url,baidu
+#        - id: qq_route
+#          uri: https://im.qq.com/index/
+#          predicates:
+#            - Query=url,qq
 #前端项目/api
 # http://localhost:88/api/captcha.jpg   ====>   http://localhost:8086/renren-fast/captcha.jpg
 # http://localhost:88/api/product/category/list/tree    ====>   http://localhost:10000/product/category/list/tree
@@ -21,10 +21,16 @@ spring:
           filters:
             - RewritePath=/api/(?<segment>.*),/$\{segment}
 
-#        - id: admin_route
-#          uri: lb://renren-fast
-#          predicates:
-#            - Path=/api/**
-#          filters:
-#            - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}
+        - id: third_party_route
+          uri: lb://mall-third-party
+          predicates:
+            - Path=/api/thirdparty/**
+          filters:
+            - RewritePath=/api/thirdparty/(?<segment>.*),/$\{segment}
+        - id: admin_route
+          uri: lb://renren-fast
+          predicates:
+            - Path=/api/**
+          filters:
+            - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}
 
