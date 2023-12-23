@@ -61,11 +61,10 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
         <!--        OSS-->
-        <dependency>
-            <groupId>com.alibaba.cloud</groupId>
-            <artifactId>aliyun-oss-spring-boot-starter</artifactId>
-            <version>1.0.0</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.alibaba.cloud</groupId>-->
+<!--            <artifactId>aliyun-oss-spring-boot-starter</artifactId>-->
+<!--        </dependency>-->
 
     </dependencies>
 
