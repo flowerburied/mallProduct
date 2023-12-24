@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.example.common.valid.AddGroup;
+import com.example.common.valid.ListValue;
+import com.example.common.valid.UpdateGroup;
 import lombok.Data;
 import lombok.NonNull;
 import org.hibernate.validator.constraints.URL;
@@ -28,18 +31,20 @@ public class BrandEntity implements Serializable {
     /**
      * Ʒ
      */
+    @NotNull(message = "修改必须指定ID", groups = {UpdateGroup.class})
+    @Null(message = "新增不能指定id", groups = {AddGroup.class})
     @TableId
     private Long brandId;
     /**
      * Ʒ
      */
-    @NotBlank(message = "品牌名不能为空")
+    @NotBlank(message = "品牌名不能为空", groups = {UpdateGroup.class, AddGroup.class})
     private String name;
     /**
      * Ʒ
      */
-    @NotEmpty
-    @URL(message = "必须是合法的url地址")
+    @NotEmpty(groups = {AddGroup.class})
+    @URL(message = "必须是合法的url地址", groups = {UpdateGroup.class, AddGroup.class})
     private String logo;
     /**
      *
@@ -48,18 +53,19 @@ public class BrandEntity implements Serializable {
     /**
      *
      */
+    @ListValue(vals = {0, 1}, groups = {AddGroup.class})
     private Integer showStatus;
     /**
      *
      */
-    @NotEmpty
-    @Pattern(regexp = "/^[a-zA-Z]$/", message = "检索首字母必须是一个字母")
+    @NotEmpty(groups = {AddGroup.class})
+    @Pattern(regexp = "^[a-zA-Z]$", message = "检索首字母必须是一个字母", groups = {UpdateGroup.class, AddGroup.class})
     private String firstLetter;
     /**
      *
      */
-    @NotNull
-    @Min(value = 0, message = "排序必须大于等于零")
+    @NotNull(groups = {AddGroup.class})
+    @Min(value = 0, message = "排序必须大于等于零", groups = {UpdateGroup.class, AddGroup.class})
     private Integer sort;
 
 }
