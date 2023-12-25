@@ -1,5 +1,6 @@
 package com.example.mall.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.mall.product.dao.BrandDao;
 import com.example.mall.product.dao.CategoryDao;
 import com.example.mall.product.entity.BrandEntity;
@@ -46,13 +47,33 @@ public class CategoryBrandRelationServiceImpl extends ServiceImpl<CategoryBrandR
         Long catelogId = categoryBrandRelation.getCatelogId();
 
         BrandEntity brandEntity = brandDao.selectById(brandId);
-
         CategoryEntity categoryEntity = categoryDao.selectById(catelogId);
 
         categoryBrandRelation.setBrandName(brandEntity.getName());
         categoryBrandRelation.setCatelogName(categoryEntity.getName());
 
         this.save(categoryBrandRelation);
+    }
+
+    @Override
+    public void updateBrand(Long brandId, String name) {
+        CategoryBrandRelationEntity categoryBrandRelationEntity = new CategoryBrandRelationEntity();
+        categoryBrandRelationEntity.setBrandName(name);
+        categoryBrandRelationEntity.setBrandId(brandId);
+        LambdaUpdateWrapper<CategoryBrandRelationEntity> objectLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        objectLambdaUpdateWrapper.eq(CategoryBrandRelationEntity::getBrandId, brandId);
+
+        baseMapper.update(categoryBrandRelationEntity, objectLambdaUpdateWrapper);
+    }
+
+    @Override
+    public void updateCatelog(CategoryEntity category) {
+        CategoryBrandRelationEntity categoryBrandRelationEntity = new CategoryBrandRelationEntity();
+        categoryBrandRelationEntity.setCatelogId(category.getCatId());
+        categoryBrandRelationEntity.setCatelogName(category.getName());
+        LambdaUpdateWrapper<CategoryBrandRelationEntity> objectLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        objectLambdaUpdateWrapper.eq(CategoryBrandRelationEntity::getCatelogId,category.getCatId());
+        baseMapper.update(categoryBrandRelationEntity,objectLambdaUpdateWrapper);
     }
 
 }

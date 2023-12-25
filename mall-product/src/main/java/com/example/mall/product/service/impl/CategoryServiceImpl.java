@@ -1,5 +1,6 @@
 package com.example.mall.product.service.impl;
 
+import com.example.mall.product.service.CategoryBrandRelationService;
 import com.sun.xml.internal.bind.v2.TODO;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import com.example.common.utils.Query;
 import com.example.mall.product.dao.CategoryDao;
 import com.example.mall.product.entity.CategoryEntity;
 import com.example.mall.product.service.CategoryService;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -27,6 +29,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
 //    @Resource
 //    CategoryDao categoryDao;
+
+    @Resource
+    CategoryBrandRelationService categoryBrandRelationService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -91,6 +96,20 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         Collections.reverse(paths);
         System.out.println("catalogId222===" + paths);
         return paths.toArray(new Long[0]);
+    }
+
+    /**
+     * 级联更新所有数据
+     * @param category
+     */
+    @Transactional
+    @Override
+    public void updateCascade(CategoryEntity category) {
+        baseMapper.updateById(category);
+
+        categoryBrandRelationService.updateCatelog(category);
+
+
     }
 
     private void findParentPath(Long catalogId, List<Long> paths) {
