@@ -1,15 +1,19 @@
 package com.example.mall.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.example.mall.product.entity.AttrAttrgroupRelationEntity;
+import com.example.mall.product.entity.AttrEntity;
+import com.example.mall.product.service.AttrService;
 import com.example.mall.product.service.CategoryService;
+import com.example.mall.product.vo.AttrGroupRelationVo;
+import com.example.mall.product.vo.AttrRespondVo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.mall.product.entity.AttrGroupEntity;
 import com.example.mall.product.service.AttrGroupService;
@@ -32,6 +36,26 @@ public class AttrGroupController {
     @Resource
     CategoryService categoryService;
 
+    @Resource
+    AttrService attrService;
+
+
+    @PostMapping("/attr/relation/delete")
+    public R deleteRelation(@RequestBody List<AttrRespondVo> vos) {
+        attrService.deleteRealtion(vos);
+        return R.ok();
+    }
+
+
+    //    /attrgroup/1/attr/relation
+    @GetMapping("/{attrGroupId}/attr/relation")
+    public R attrRelation(@PathVariable("attrGroupId") Long attrGroupId) {
+
+        List<AttrEntity> list = attrService.getRelationAttr(attrGroupId);
+
+        return R.ok().put("data", list);
+    }
+
     /**
      * 列表
      */
@@ -46,15 +70,15 @@ public class AttrGroupController {
         return R.ok().put("page", pageUtils);
     }
 
-    /**
-     * 列表
-     */
-    @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params) {
-        PageUtils page = attrGroupService.queryPage(params);
-
-        return R.ok().put("page", page);
-    }
+//    /**
+//     * 列表
+//     */
+//    @RequestMapping("/list")
+//    public R list(@RequestParam Map<String, Object> params) {
+//        PageUtils page = attrGroupService.queryPage(params);
+//
+//        return R.ok().put("page", page);
+//    }
 
 
     /**
