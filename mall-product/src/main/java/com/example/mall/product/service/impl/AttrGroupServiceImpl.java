@@ -75,36 +75,39 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
     @Override
     public List<AttrGroupWithAttrVo> getGroupWithAttr(Long cateLogId) {
 
+        // Step 1: Query for AttrGroupEntity
         LambdaQueryWrapper<AttrGroupEntity> attrGroupWrapper = new LambdaQueryWrapper<>();
         attrGroupWrapper.eq(AttrGroupEntity::getCatelogId, cateLogId);
         List<AttrGroupEntity> attrGroupEntities = baseMapper.selectList(attrGroupWrapper);
 
-        List<AttrGroupWithAttrVo> collect = attrGroupEntities.stream().map((item) -> {
-            AttrGroupWithAttrVo attrGroupWithAttrVo = new AttrGroupWithAttrVo();
-            LambdaQueryWrapper<AttrAttrgroupRelationEntity> attrRelationWrapper = new LambdaQueryWrapper<>();
-            attrRelationWrapper.eq(AttrAttrgroupRelationEntity::getAttrGroupId, item.getAttrGroupId());
-            List<AttrAttrgroupRelationEntity> attrAttrgroupRelationEntities = attrAttrgroupRelationDao.selectList(attrRelationWrapper);
+        // Step 2: Collect AttrGroupWithAttrVo list
+        List<AttrGroupWithAttrVo> result = attrGroupEntities.stream()
+                .map(this::convertToAttrGroupWithAttrVo)
+                .collect(Collectors.toList());
+        return result;
+    }
 
-            List<AttrEntity> AttrEntitys = attrAttrgroupRelationEntities.stream()
-                    .map(itemId -> {
-                        LambdaQueryWrapper<AttrEntity> attrWrapper = new LambdaQueryWrapper<>();
-                        attrWrapper.eq(AttrEntity::getAttrId, itemId.getAttrId());
-                        List<AttrEntity> list = attrDao.selectList(attrWrapper);
-                        return list;
-                    })
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
+    private AttrGroupWithAttrVo convertToAttrGroupWithAttrVo(AttrGroupEntity attrGroupEntity) {
+        AttrGroupWithAttrVo attrGroupWithAttrVo = new AttrGroupWithAttrVo();
+        BeanUtils.copyProperties(attrGroupEntity, attrGroupWithAttrVo);
 
+        // Step 3: Query for AttrAttrgroupRelationEntity and AttrEntity
+        LambdaQueryWrapper<AttrAttrgroupRelationEntity> attrRelationWrapper = new LambdaQueryWrapper<>();
+        attrRelationWrapper.eq(AttrAttrgroupRelationEntity::getAttrGroupId, attrGroupEntity.getAttrGroupId());
+        List<AttrAttrgroupRelationEntity> attrAttrgroupRelationEntities = attrAttrgroupRelationDao.selectList(attrRelationWrapper);
 
-            BeanUtils.copyProperties(item, attrGroupWithAttrVo);
-            attrGroupWithAttrVo.setAttrs(AttrEntitys);
+        List<AttrEntity> attrEntities = attrAttrgroupRelationEntities.stream()
+                .map(attrRelationEntity -> {
+                    LambdaQueryWrapper<AttrEntity> attrWrapper = new LambdaQueryWrapper<>();
+                    attrWrapper.eq(AttrEntity::getAttrId, attrRelationEntity.getAttrId());
+                    return attrDao.selectList(attrWrapper);
+                })
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
 
-            return attrGroupWithAttrVo;
+        attrGroupWithAttrVo.setAttrs(attrEntities);
 
-        }).collect(Collectors.toList());
-
-        return collect;
-
+        return attrGroupWithAttrVo;
     }
 
 
