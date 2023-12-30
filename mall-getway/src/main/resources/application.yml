@@ -13,6 +13,12 @@ spring:
 #前端项目/api
 # http://localhost:88/api/captcha.jpg   ====>   http://localhost:8086/renren-fast/captcha.jpg
 # http://localhost:88/api/product/category/list/tree    ====>   http://localhost:10000/product/category/list/tree
+        - id: member_route
+          uri: lb://mall-member
+          predicates:
+            - Path=/api/member/**
+          filters:
+            - RewritePath=/api/(?<segment>.*),/$\{segment}
 
         - id: product_route
           uri: lb://mall-product

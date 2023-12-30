@@ -7,9 +7,11 @@ import java.util.stream.Collectors;
 
 import com.example.mall.product.entity.AttrAttrgroupRelationEntity;
 import com.example.mall.product.entity.AttrEntity;
+import com.example.mall.product.service.AttrAttrgroupRelationService;
 import com.example.mall.product.service.AttrService;
 import com.example.mall.product.service.CategoryService;
 import com.example.mall.product.vo.AttrGroupRelationVo;
+import com.example.mall.product.vo.AttrGroupWithAttrVo;
 import com.example.mall.product.vo.AttrRespondVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,27 @@ public class AttrGroupController {
     @Resource
     AttrService attrService;
 
+    @Resource
+    AttrAttrgroupRelationService attrAttrgroupRelationService;
+
+
+    //    attrgroup/165/withattr?t=1703929253540
+    @GetMapping("/{cateLogId}/withattr")
+    public R withAttr(@PathVariable("cateLogId") Long cateLogId) {
+        List<AttrGroupWithAttrVo> data = attrGroupService.getGroupWithAttr(cateLogId);
+
+        return R.ok().put("data", data);
+
+    }
+
+
+    //    t/attrgroup/attr/relation
+    @PostMapping("/attr/relation")
+    public R addRelation(@RequestBody List<AttrGroupRelationVo> attrGroupRelationVoList) {
+        attrAttrgroupRelationService.saveBatchs(attrGroupRelationVoList);
+
+        return R.ok();
+    }
 
     @PostMapping("/attr/relation/delete")
     public R deleteRelation(@RequestBody List<AttrRespondVo> vos) {
@@ -46,6 +69,14 @@ public class AttrGroupController {
         return R.ok();
     }
 
+    //    noattr/relation
+    @GetMapping("/{attrGroupId}/noattr/relation")
+    public R noattrRelation(@PathVariable("attrGroupId") Long attrGroupId,
+                            @RequestParam Map<String, Object> params) {
+        PageUtils data = attrService.getNoRelationAttr(params, attrGroupId);
+
+        return R.ok().put("data", data);
+    }
 
     //    /attrgroup/1/attr/relation
     @GetMapping("/{attrGroupId}/attr/relation")

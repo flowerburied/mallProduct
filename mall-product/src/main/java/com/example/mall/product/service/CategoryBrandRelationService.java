@@ -5,6 +5,7 @@ import com.example.common.utils.PageUtils;
 import com.example.mall.product.entity.CategoryBrandRelationEntity;
 import com.example.mall.product.entity.CategoryEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,5 +24,7 @@ public interface CategoryBrandRelationService extends IService<CategoryBrandRela
     void updateBrand(Long brandId, String name);
 
     void updateCatelog(CategoryEntity category);
+
+    List<CategoryBrandRelationEntity> getBrandsList(Map<String, Object> param);
 }
 

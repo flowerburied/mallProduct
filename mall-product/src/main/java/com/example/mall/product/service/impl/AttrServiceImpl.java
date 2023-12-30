@@ -67,12 +67,13 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         AttrEntity attrEntity = new AttrEntity();
         BeanUtils.copyProperties(attr, attrEntity);
         this.save(attrEntity);
-
-        if (attr.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode()) {
+//        baseMapper.insert(attrEntity);
+        System.out.println("attrEntity===" + attrEntity);
+        if (attr.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode() && attr.getAttrGroupId()!=null) {
             AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = new AttrAttrgroupRelationEntity();
             attrAttrgroupRelationEntity.setAttrGroupId(attr.getAttrGroupId());
-            attrAttrgroupRelationEntity.setAttrId(attr.getAttrId());
-
+            attrAttrgroupRelationEntity.setAttrId(attrEntity.getAttrId());
+            System.out.println("attrAttrgroupRelationEntity===" + attrAttrgroupRelationEntity);
             attrAttrgroupRelationDao.insert(attrAttrgroupRelationEntity);
         }
 
@@ -147,10 +148,14 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         LambdaQueryWrapper<AttrAttrgroupRelationEntity> attrWrapper = new LambdaQueryWrapper<>();
         attrWrapper.eq(AttrAttrgroupRelationEntity::getAttrGroupId, attrGroupId);
         List<AttrAttrgroupRelationEntity> attrAttrgroupRelationEntities = attrAttrgroupRelationDao.selectList(attrWrapper);
+
+        System.out.println("attrAttrgroupRelationEntities===" + attrAttrgroupRelationEntities);
+        if (attrAttrgroupRelationEntities.size() == 0 || attrAttrgroupRelationEntities == null) {
+            return null;
+        }
+
         List<Long> collect = attrAttrgroupRelationEntities.stream().map(item -> item.getAttrId()).collect(Collectors.toList());
-
         List<AttrEntity> list = baseMapper.selectBatchIds(collect);
-
         return list;
 
     }
@@ -176,6 +181,55 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         });
 
         System.out.println("vos===" + vos);
+    }
+
+    /**
+     * 获取当前属性没有分组的属性
+     *
+     * @param params
+     * @param attrGroupId
+     * @return
+     */
+    @Override
+    public PageUtils getNoRelationAttr(Map<String, Object> params, Long attrGroupId) {
+//        当前分组只能关联自己所属的分类里面的属性
+        AttrGroupEntity attrGroupEntity = attrGroupDao.selectById(attrGroupId);
+        Long catelogId = attrGroupEntity.getCatelogId();
+
+//        当前分组只能关联别的分组没有引用的数据
+//            当前分类下的其他分组
+        LambdaQueryWrapper<AttrGroupEntity> attrWrapper = new LambdaQueryWrapper<>();
+        attrWrapper.eq(AttrGroupEntity::getCatelogId, catelogId);
+        List<AttrGroupEntity> attrGroupEntities = attrGroupDao.selectList(attrWrapper);
+        List<Long> collect = attrGroupEntities.stream().map(item -> item.getAttrGroupId()).collect(Collectors.toList());
+
+//            这些分组的关联属性
+        LambdaQueryWrapper<AttrAttrgroupRelationEntity> attrRelationWrapper = new LambdaQueryWrapper<>();
+        attrRelationWrapper.in(AttrAttrgroupRelationEntity::getAttrGroupId, collect);
+        List<AttrAttrgroupRelationEntity> attrRelationEntities = attrAttrgroupRelationDao.selectList(attrRelationWrapper);
+
+        List<Long> attrId = attrRelationEntities.stream().map((item) -> item.getAttrId()).collect(Collectors.toList());
+        //            从当前分类的所有属性中移除这些属性
+        LambdaQueryWrapper<AttrEntity> attrEntityWrapper = new LambdaQueryWrapper<>();
+        attrEntityWrapper.eq(AttrEntity::getCatelogId, catelogId).eq(AttrEntity::getAttrType, ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
+
+        System.out.println("attrId===" + attrId);
+
+        if (attrId != null && attrId.size() > 0) {
+            attrEntityWrapper.notIn(AttrEntity::getAttrId, attrId);
+        }
+        String key = (String) params.get("key");
+        if (!StringUtils.isEmpty(key)) {
+            attrEntityWrapper.and((w) -> {
+                w.eq(AttrEntity::getAttrId, key).or().like(AttrEntity::getAttrName, key);
+            });
+        }
+
+        IPage<AttrEntity> attrEntityIPage = baseMapper.selectPage(new Query<AttrEntity>().getPage(params), attrEntityWrapper);
+
+        PageUtils pageUtils = new PageUtils(attrEntityIPage);
+
+        return pageUtils;
     }
 
 
