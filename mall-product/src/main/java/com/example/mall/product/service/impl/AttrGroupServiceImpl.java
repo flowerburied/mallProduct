@@ -7,6 +7,7 @@ import com.example.mall.product.entity.AttrAttrgroupRelationEntity;
 import com.example.mall.product.entity.AttrEntity;
 
 import com.example.mall.product.service.AttrAttrgroupRelationService;
+import com.example.mall.product.service.AttrService;
 import com.example.mall.product.vo.AttrGroupWithAttrVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,8 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
     AttrAttrgroupRelationDao attrAttrgroupRelationDao;
     @Resource
     AttrDao attrDao;
+    @Resource
+    AttrService attrService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -92,18 +95,19 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
         BeanUtils.copyProperties(attrGroupEntity, attrGroupWithAttrVo);
 
         // Step 3: Query for AttrAttrgroupRelationEntity and AttrEntity
-        LambdaQueryWrapper<AttrAttrgroupRelationEntity> attrRelationWrapper = new LambdaQueryWrapper<>();
-        attrRelationWrapper.eq(AttrAttrgroupRelationEntity::getAttrGroupId, attrGroupEntity.getAttrGroupId());
-        List<AttrAttrgroupRelationEntity> attrAttrgroupRelationEntities = attrAttrgroupRelationDao.selectList(attrRelationWrapper);
-
-        List<AttrEntity> attrEntities = attrAttrgroupRelationEntities.stream()
-                .map(attrRelationEntity -> {
-                    LambdaQueryWrapper<AttrEntity> attrWrapper = new LambdaQueryWrapper<>();
-                    attrWrapper.eq(AttrEntity::getAttrId, attrRelationEntity.getAttrId());
-                    return attrDao.selectList(attrWrapper);
-                })
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
+//        LambdaQueryWrapper<AttrAttrgroupRelationEntity> attrRelationWrapper = new LambdaQueryWrapper<>();
+//        attrRelationWrapper.eq(AttrAttrgroupRelationEntity::getAttrGroupId, attrGroupEntity.getAttrGroupId());
+//        List<AttrAttrgroupRelationEntity> attrAttrgroupRelationEntities = attrAttrgroupRelationDao.selectList(attrRelationWrapper);
+//
+//        List<AttrEntity> attrEntities = attrAttrgroupRelationEntities.stream()
+//                .map(attrRelationEntity -> {
+//                    LambdaQueryWrapper<AttrEntity> attrWrapper = new LambdaQueryWrapper<>();
+//                    attrWrapper.eq(AttrEntity::getAttrId, attrRelationEntity.getAttrId());
+//                    return attrDao.selectList(attrWrapper);
+//                })
+//                .flatMap(List::stream)
+//                .collect(Collectors.toList());
+        List<AttrEntity> attrEntities = attrService.getRelationAttr(attrGroupEntity.getAttrGroupId());
 
         attrGroupWithAttrVo.setAttrs(attrEntities);
 
