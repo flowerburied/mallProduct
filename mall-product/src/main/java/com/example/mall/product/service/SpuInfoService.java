@@ -2,6 +2,7 @@ package com.example.mall.product.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.common.utils.PageUtils;
+import com.example.mall.product.entity.SpuInfoDescEntity;
 import com.example.mall.product.entity.SpuInfoEntity;
 import com.example.mall.product.vo.spusavevo.SpuSaveVo;
 
@@ -20,5 +21,9 @@ public interface SpuInfoService extends IService<SpuInfoEntity> {
 
 
     void saveSpuInfo(SpuSaveVo spuInfoVo);
+
+    void saveBaseSpuInfo(SpuInfoEntity spuInfoEntity);
+
+    void savespuInfoDesc(SpuInfoDescEntity spuInfoDescEntity);
 }
 
