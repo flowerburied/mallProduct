@@ -176,25 +176,25 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         LambdaQueryWrapper<SpuInfoEntity> spuInfoWrapper = new LambdaQueryWrapper<>();
 
         String key = (String) params.get("key");
-        if (!StringUtils.isEmpty(key)){
-            spuInfoWrapper.and(item->{
-                item.eq(SpuInfoEntity::getId,key).or().like(SpuInfoEntity::getSpuName,key);
+        if (!StringUtils.isEmpty(key)) {
+            spuInfoWrapper.and(item -> {
+                item.eq(SpuInfoEntity::getId, key).or().like(SpuInfoEntity::getSpuName, key);
             });
         }
 
         String status = (String) params.get("status");
-        if (!StringUtils.isEmpty(status)){
-            spuInfoWrapper.eq(SpuInfoEntity::getPublishStatus,status);
+        if (!StringUtils.isEmpty(status)) {
+            spuInfoWrapper.eq(SpuInfoEntity::getPublishStatus, status);
         }
 
         String brandId = (String) params.get("brandId");
-        if (!StringUtils.isEmpty(brandId)){
-            spuInfoWrapper.eq(SpuInfoEntity::getBrandId,brandId);
+        if (!StringUtils.isEmpty(brandId) && !"0".equalsIgnoreCase(brandId)) {
+            spuInfoWrapper.eq(SpuInfoEntity::getBrandId, brandId);
         }
 
-        String catelogId = (String) params.get("catelogId");
-        if (!StringUtils.isEmpty(catelogId)){
-            spuInfoWrapper.eq(SpuInfoEntity::getCatalogId,catelogId);
+        String catelogId = getString(params, "catelogId");
+        if (!StringUtils.isEmpty(catelogId) && !"0".equalsIgnoreCase(catelogId)) {
+            spuInfoWrapper.eq(SpuInfoEntity::getCatalogId, catelogId);
         }
 
 
@@ -202,11 +202,11 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                 new Query<SpuInfoEntity>().getPage(params),
                 spuInfoWrapper
         );
-
-
         return new PageUtils(page);
+    }
 
-
+    private String getString(Map<String, Object> params, String key) {
+        return (String) params.get(key);
     }
 
 
