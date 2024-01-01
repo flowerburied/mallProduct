@@ -1,20 +1,23 @@
 package com.example.mall.product.service.impl;
 
+import com.example.common.to.SkuReductionTo;
+import com.example.common.to.SpuBoundTo;
+import com.example.common.utils.R;
 import com.example.mall.product.dao.SpuInfoDescDao;
-import com.example.mall.product.entity.SpuImagesEntity;
-import com.example.mall.product.entity.SpuInfoDescEntity;
-import com.example.mall.product.service.ProductAttrValueService;
-import com.example.mall.product.service.SkuInfoService;
-import com.example.mall.product.service.SpuImagesService;
-import com.example.mall.product.vo.spusavevo.BaseAttrs;
-import com.example.mall.product.vo.spusavevo.Skus;
-import com.example.mall.product.vo.spusavevo.SpuSaveVo;
+import com.example.mall.product.entity.*;
+import com.example.mall.product.feign.CouponFeignService;
+import com.example.mall.product.service.*;
+import com.example.mall.product.vo.spusavevo.*;
+import com.sun.xml.internal.bind.v2.TODO;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -23,8 +26,6 @@ import com.example.common.utils.PageUtils;
 import com.example.common.utils.Query;
 
 import com.example.mall.product.dao.SpuInfoDao;
-import com.example.mall.product.entity.SpuInfoEntity;
-import com.example.mall.product.service.SpuInfoService;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -42,6 +43,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     ProductAttrValueService productAttrValueService;
     @Resource
     SkuInfoService skuInfoService;
+    @Resource
+    SkuImagesService skuImagesService;
+    @Resource
+    SkuSaleAttrValueService skuSaleAttrValueService;
+    @Resource
+    CouponFeignService couponFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -79,17 +86,77 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         productAttrValueService.saveProductAttr(baseAttrs, spuInfoEntity.getId());
 //        保存spu积分信息 mall_sms -> sms_spu_bounds
+        Bounds bounds = spuInfoVo.getBounds();
+        SpuBoundTo spuBoundTo = new SpuBoundTo();
+        BeanUtils.copyProperties(bounds, spuBoundTo);
+        spuBoundTo.setSpuId(spuInfoEntity.getId());
+        R r = couponFeignService.saveSpuBound(spuBoundTo);
 
+        if (r.getCode() != 0) {
+            log.error("远程服务spu调用失败");
+        }
 //        6：保存当前spu对应的所有sku信息
 //        6.1 sku的基本信息 pms_sku_info
         List<Skus> skus = spuInfoVo.getSkus();
-        if(skus.size()>0&& skus!=null){
+        if (skus.size() > 0 && skus != null) {
+            skus.forEach((item) -> {
+                String defaultImg = "";
+                for (Images image : item.getImages()) {
+                    if (image.getDefaultImg() == 1) {
+                        defaultImg = image.getImgUrl();
+                    }
+                }
+                SkuInfoEntity skuInfoEntity = new SkuInfoEntity();
+                BeanUtils.copyProperties(item, skuInfoEntity);
+                skuInfoEntity.setBrandId(spuInfoEntity.getBrandId());
+                skuInfoEntity.setCatalogId(spuInfoEntity.getCatalogId());
+                skuInfoEntity.setSaleCount(0L);
+                skuInfoEntity.setSpuId(spuInfoEntity.getId());
+                skuInfoEntity.setSkuDefaultImg(defaultImg);
+// save base information
+                skuInfoService.saveSkuInfo(skuInfoEntity);
 
+                Long skuId = skuInfoEntity.getSkuId();
+
+
+                List<SkuImagesEntity> collect = item.getImages().stream().map((img) -> {
+                    SkuImagesEntity skuImagesEntity = new SkuImagesEntity();
+                    skuImagesEntity.setSkuId(skuId);
+                    skuImagesEntity.setImgUrl(img.getImgUrl());
+                    skuImagesEntity.setDefaultImg(img.getDefaultImg());
+
+                    return skuImagesEntity;
+                }).filter(entity-> !StringUtils.isEmpty(entity.getImgUrl())).collect(Collectors.toList());
+
+//                sku image information  pms_sku_images
+
+                skuImagesService.saveBatch(collect);
+
+//                sku sales attribute information   pms_sku_sale_attr_value
+                List<Attr> attr = item.getAttr();
+                List<SkuSaleAttrValueEntity> collect1 = attr.stream().map(a -> {
+                    SkuSaleAttrValueEntity skuSaleAttrValueEntity = new SkuSaleAttrValueEntity();
+
+                    BeanUtils.copyProperties(a, skuSaleAttrValueEntity);
+                    skuSaleAttrValueEntity.setSkuId(skuId);
+                    return skuSaleAttrValueEntity;
+                }).collect(Collectors.toList());
+                skuSaleAttrValueService.saveBatch(collect1);
+//        6.4 sku preferential Full reduction information  mall_sms->sms_ske_ladder \sku_sms_full_reduction
+//                6.5 sku preferential information
+                SkuReductionTo skuReductionTo = new SkuReductionTo();
+                if(skuReductionTo.getFullCount()>0 || skuReductionTo.getFullPrice().compareTo(new BigDecimal("0"))==1){
+                    R r1 = couponFeignService.saveSkuReduction(skuReductionTo);
+                    if (r1.getCode() != 0) {
+                        log.error("远程sku服务调用失败");
+                    }
+                }
+
+            });
         }
 //        skuInfoService
-//        6.2 sku的图片信息 pms_sku_images
-//        6.3 sku的sale attribute information  pms_sku_sale_attr_value
-//        6.4 sku的preferential Full reduction information  mall_sms->sms_ske_ladder \sku_sms_full_reduction
+
+
     }
 
     @Override
