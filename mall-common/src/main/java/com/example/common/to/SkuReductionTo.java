@@ -1,11 +1,10 @@
 package com.example.common.to;
 
-import com.example.mall.product.vo.spusavevo.MemberPrice;
+import com.example.common.to.MemberPrice;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
-
 
 @Data
 public class SkuReductionTo {

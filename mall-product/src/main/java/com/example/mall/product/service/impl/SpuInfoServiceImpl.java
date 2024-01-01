@@ -1,5 +1,6 @@
 package com.example.mall.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.common.to.SkuReductionTo;
 import com.example.common.to.SpuBoundTo;
 import com.example.common.utils.R;
@@ -126,7 +127,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     skuImagesEntity.setDefaultImg(img.getDefaultImg());
 
                     return skuImagesEntity;
-                }).filter(entity-> !StringUtils.isEmpty(entity.getImgUrl())).collect(Collectors.toList());
+                }).filter(entity -> !StringUtils.isEmpty(entity.getImgUrl())).collect(Collectors.toList());
 
 //                sku image information  pms_sku_images
 
@@ -145,7 +146,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 //        6.4 sku preferential Full reduction information  mall_sms->sms_ske_ladder \sku_sms_full_reduction
 //                6.5 sku preferential information
                 SkuReductionTo skuReductionTo = new SkuReductionTo();
-                if(skuReductionTo.getFullCount()>0 || skuReductionTo.getFullPrice().compareTo(new BigDecimal("0"))==1){
+                if (skuReductionTo.getFullCount() > 0 || skuReductionTo.getFullPrice().compareTo(new BigDecimal("0")) == 1) {
                     R r1 = couponFeignService.saveSkuReduction(skuReductionTo);
                     if (r1.getCode() != 0) {
                         log.error("远程sku服务调用失败");
@@ -167,6 +168,45 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     @Override
     public void savespuInfoDesc(SpuInfoDescEntity spuInfoDescEntity) {
         spuInfoDescDao.insert(spuInfoDescEntity);
+    }
+
+    @Override
+    public PageUtils queryPageByCondition(Map<String, Object> params) {
+
+        LambdaQueryWrapper<SpuInfoEntity> spuInfoWrapper = new LambdaQueryWrapper<>();
+
+        String key = (String) params.get("key");
+        if (!StringUtils.isEmpty(key)){
+            spuInfoWrapper.and(item->{
+                item.eq(SpuInfoEntity::getId,key).or().like(SpuInfoEntity::getSpuName,key);
+            });
+        }
+
+        String status = (String) params.get("status");
+        if (!StringUtils.isEmpty(status)){
+            spuInfoWrapper.eq(SpuInfoEntity::getPublishStatus,status);
+        }
+
+        String brandId = (String) params.get("brandId");
+        if (!StringUtils.isEmpty(brandId)){
+            spuInfoWrapper.eq(SpuInfoEntity::getBrandId,brandId);
+        }
+
+        String catelogId = (String) params.get("catelogId");
+        if (!StringUtils.isEmpty(catelogId)){
+            spuInfoWrapper.eq(SpuInfoEntity::getCatalogId,catelogId);
+        }
+
+
+        IPage<SpuInfoEntity> page = this.page(
+                new Query<SpuInfoEntity>().getPage(params),
+                spuInfoWrapper
+        );
+
+
+        return new PageUtils(page);
+
+
     }
 
 
