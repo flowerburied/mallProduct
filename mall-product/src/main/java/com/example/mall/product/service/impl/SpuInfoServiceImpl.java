@@ -146,7 +146,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 //        6.4 sku preferential Full reduction information  mall_sms->sms_ske_ladder \sku_sms_full_reduction
 //                6.5 sku preferential information
                 SkuReductionTo skuReductionTo = new SkuReductionTo();
+                BeanUtils.copyProperties(item, skuReductionTo);
+                System.out.println("item===" + item);
+                System.out.println("skuReductionTo===" + skuReductionTo);
+                skuReductionTo.setSkuId(skuId);
                 if (skuReductionTo.getFullCount() > 0 || skuReductionTo.getFullPrice().compareTo(new BigDecimal("0")) == 1) {
+
                     R r1 = couponFeignService.saveSkuReduction(skuReductionTo);
                     if (r1.getCode() != 0) {
                         log.error("远程sku服务调用失败");

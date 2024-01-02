@@ -1,8 +1,11 @@
 package com.example.mall.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import com.example.mall.product.entity.ProductAttrValueEntity;
+import com.example.mall.product.service.ProductAttrValueService;
 import com.example.mall.product.vo.AttrRespondVo;
 import com.example.mall.product.vo.AttrVo;
 import com.sun.org.apache.xpath.internal.objects.XObject;
@@ -13,6 +16,8 @@ import com.example.mall.product.entity.AttrEntity;
 import com.example.mall.product.service.AttrService;
 import com.example.common.utils.PageUtils;
 import com.example.common.utils.R;
+
+import javax.annotation.Resource;
 
 
 /**
@@ -26,13 +31,24 @@ public class AttrController {
     @Autowired
     private AttrService attrService;
 
+    @Resource
+    ProductAttrValueService productAttrValueService;
+
+    @GetMapping("/base/listforspu/{spuId}")
+    public R baseAttrListForSpu(
+            @PathVariable("spuId") Long spuId) {
+      List<ProductAttrValueEntity> entities= productAttrValueService.baseAttrListForSpu(spuId);
+
+        return R.ok().put("data", null);
+    }
+
 
     @GetMapping("/{attrType}/list/{catId}")
     public R baseList(@RequestParam Map<String, Object> param,
                       @PathVariable("catId") Long catId,
                       @PathVariable("attrType") String attrType) {
 
-        PageUtils pageUtils = attrService.queryPageById(param, catId,attrType);
+        PageUtils pageUtils = attrService.queryPageById(param, catId, attrType);
 
         return R.ok().put("page", pageUtils);
 
@@ -76,6 +92,16 @@ public class AttrController {
     @RequestMapping("/update")
     public R update(@RequestBody AttrVo attr) {
         attrService.updateAttr(attr);
+
+        return R.ok();
+    }
+
+    @PostMapping("/update/{spuId}")
+    public R updateSpuAttr(
+            @PathVariable Long spuId,
+            @RequestBody List<ProductAttrValueEntity> productAttrValueEntities){
+
+        productAttrValueService.updateSpuAttr(spuId,productAttrValueEntities);
 
         return R.ok();
     }

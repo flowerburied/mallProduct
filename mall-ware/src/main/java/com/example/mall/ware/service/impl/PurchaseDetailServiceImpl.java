@@ -5,6 +5,7 @@ import com.example.mall.ware.entity.WareInfoEntity;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -52,5 +53,17 @@ public class PurchaseDetailServiceImpl extends ServiceImpl<PurchaseDetailDao, Pu
 
         return new PageUtils(page);
     }
+
+    @Override
+    public List<PurchaseDetailEntity> listDetailByPurchaseId(Long id) {
+        LambdaQueryWrapper<PurchaseDetailEntity> purchaseWrapper = new LambdaQueryWrapper<>();
+        purchaseWrapper.eq(PurchaseDetailEntity::getPurchaseId,id);
+        List<PurchaseDetailEntity> list = this.list(purchaseWrapper);
+
+        return list;
+    }
+
+
+
 
 }

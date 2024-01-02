@@ -1,11 +1,12 @@
 package com.example.mall.coupon.service.impl;
 
+import com.example.common.to.MemberPrice;
 import com.example.common.to.SkuReductionTo;
 import com.example.mall.coupon.entity.MemberPriceEntity;
 import com.example.mall.coupon.entity.SkuLadderEntity;
 import com.example.mall.coupon.service.MemberPriceService;
 import com.example.mall.coupon.service.SkuLadderService;
-import com.example.mall.product.vo.spusavevo.MemberPrice;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
