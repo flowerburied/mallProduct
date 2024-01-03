@@ -1,4 +1,4 @@
-package com.example.mall.ware.vo;
+package com.example.common.to;
 
 import lombok.Data;
 

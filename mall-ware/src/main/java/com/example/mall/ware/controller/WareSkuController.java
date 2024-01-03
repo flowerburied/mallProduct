@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import com.example.mall.ware.vo.SkuHasStockVo;
+import com.example.common.to.SkuHasStockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,10 +29,12 @@ public class WareSkuController {
 
 
     @PostMapping("/hasStock")
-    public R getSkuHasStock(@RequestBody List<Long> skuIds) {
+    public R<List<SkuHasStockVo>> getSkuHasStock(@RequestBody List<Long> skuIds) {
 
         List<SkuHasStockVo> skuHasStockVoList = wareSkuService.getSkuHasStock(skuIds);
-        return R.ok();
+        R<List<SkuHasStockVo>> ok = R.ok();
+        ok.setData(skuHasStockVoList);
+        return ok;
     }
 
 

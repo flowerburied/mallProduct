@@ -1,6 +1,9 @@
 package com.example.mall.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.example.common.constant.ProductConstant;
+import com.example.common.to.SkuHasStockVo;
 import com.example.common.to.SkuReductionTo;
 import com.example.common.to.SpuBoundTo;
 import com.example.common.to.es.SkuEsModel;
@@ -8,6 +11,8 @@ import com.example.common.utils.R;
 import com.example.mall.product.dao.SpuInfoDescDao;
 import com.example.mall.product.entity.*;
 import com.example.mall.product.feign.CouponFeignService;
+import com.example.mall.product.feign.SearchFeignService;
+import com.example.mall.product.feign.WareFeignService;
 import com.example.mall.product.service.*;
 import com.example.mall.product.vo.spusavevo.*;
 import com.sun.xml.internal.bind.v2.TODO;
@@ -55,6 +60,11 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     CategoryService categoryService;
     @Resource
     AttrService attrService;
+    @Resource
+    WareFeignService wareFeignService;
+
+    @Resource
+    SearchFeignService searchFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -228,6 +238,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         List<ProductAttrValueEntity> baseAttrs = productAttrValueService.baseAttrListForSpu(spuId);
         List<Long> attrIds = baseAttrs.stream().map(attrs -> attrs.getAttrId()).collect(Collectors.toList());
 
+
         List<Long> attrEntities = attrService.selectSearchAttrs(attrIds);
 
         Set<Long> longs = new HashSet<>(attrEntities);
@@ -242,18 +253,30 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
 //        Find out skuId all corresponding information ,Brand name
         List<SkuInfoEntity> skus = skuInfoService.getSkuByspuId(spuId);
+
+        List<Long> skuIds = skus.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
+        //            check if there is inventory available
+        Map<Long, Boolean> stockMap = null;
+        try {
+            R<List<SkuHasStockVo>> skuHasStock = wareFeignService.getSkuHasStock(skuIds);
+//        List<SkuHasStockVo> data = skuHasStock.getData();
+            stockMap = skuHasStock.getData().stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, item -> item.getStock()));
+
+        } catch (Exception e) {
+            log.error("库存服务查询异常：{}", e);
+        }
 //      Encapsulate information for each Skus
+        Map<Long, Boolean> finalStockMap = stockMap;
         List<SkuEsModel> uoProduct = skus.stream().map((item) -> {
             SkuEsModel skuEsModel = new SkuEsModel();
             BeanUtils.copyProperties(item, skuEsModel);
-
-
             skuEsModel.setSkuPrice(item.getPrice());
             skuEsModel.setSkuImg(item.getSkuDefaultImg());
-
-//            check if there is inventory available
-//            skuEsModel.setHasStock();
-
+            if (finalStockMap == null) {
+                skuEsModel.setHasStock(true);
+            } else {
+                skuEsModel.setHasStock(finalStockMap.get(item));
+            }
             skuEsModel.setHotScore(0L);
 
             BrandEntity byId = brandService.getById(item.getBrandId());
@@ -261,16 +284,56 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             skuEsModel.setBrandName(byId.getName());
             CategoryEntity byId1 = categoryService.getById(item.getCatalogId());
             skuEsModel.setCatalogName(byId1.getName());
-
             //set retrieval properties
             skuEsModel.setAttrs(attrsList);
-
             return skuEsModel;
         }).collect(Collectors.toList());
 
         //send data to ES for saving  mall-search
+        R r = searchFeignService.productStatusUp(uoProduct);
+        if (r.getCode() == 0) {
+//            modify status
+            this.upDataSpuStatus(skuIds, ProductConstant.StatusEnum.SPU_UP.getCode());
+
+        }else{
+//           重复调用 接口幂等性 重试机制
+
+
+        }
 
     }
+
+    //    @Override
+//    public void upDataSpuStatus(List<Long> skuIds, int code) {
+//
+//        List<SpuInfoEntity> collect = skuIds.stream().map(item -> {
+//            LambdaQueryWrapper<SpuInfoEntity> spuInfoQueryWrapper = new LambdaQueryWrapper<>();
+//            spuInfoQueryWrapper.eq(SpuInfoEntity::getId, item);
+//            List<SpuInfoEntity> spuInfoEntities = baseMapper.selectList(spuInfoQueryWrapper);
+//            return spuInfoEntities;
+//        }).flatMap(List::stream)
+//                .map(entity -> {
+//                    entity.setUpdateTime(new Date());
+//                    entity.setPublishStatus(code);
+//                    return entity;
+//                }).collect(Collectors.toList());
+//        this.updateBatchById(collect);
+//    }
+    @Override
+    public void upDataSpuStatus(List<Long> skuIds, int code) {
+        // 一次性查询所有的SpuInfoEntity
+        List<SpuInfoEntity> spuInfoEntities = baseMapper.selectBatchIds(skuIds);
+
+        // 更新需要的字段
+        spuInfoEntities.forEach(entity -> {
+            entity.setUpdateTime(new Date());
+            entity.setPublishStatus(code);
+        });
+
+        // 批量更新
+        this.updateBatchById(spuInfoEntities);
+    }
+
 
     private String getString(Map<String, Object> params, String key) {
         return (String) params.get(key);

@@ -6,6 +6,7 @@ import com.example.mall.product.entity.SpuInfoDescEntity;
 import com.example.mall.product.entity.SpuInfoEntity;
 import com.example.mall.product.vo.spusavevo.SpuSaveVo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,5 +30,7 @@ public interface SpuInfoService extends IService<SpuInfoEntity> {
     PageUtils queryPageByCondition(Map<String, Object> params);
 
     void spuUp(Long spuId);
+
+    void upDataSpuStatus(List<Long> skuIds, int code);
 }
 
