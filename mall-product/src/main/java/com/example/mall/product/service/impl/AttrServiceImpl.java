@@ -232,20 +232,37 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         return pageUtils;
     }
 
-    @Override
-    public List<Long> selectSearchAttrs(List<Long> attrIds) {
+//    @Override
+//    public List<Long> selectSearchAttrs(List<Long> attrIds) {
+//
+//        List<AttrEntity> collect = attrIds.stream().map(item -> {
+//            LambdaQueryWrapper<AttrEntity> attrEntityWrapper = new LambdaQueryWrapper<>();
+//            attrEntityWrapper.eq(AttrEntity::getAttrId, item).eq(AttrEntity::getSearchType, ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
+//            List<AttrEntity> attrEntities = baseMapper.selectList(attrEntityWrapper);
+//            return attrEntities;
+//        }).flatMap(List::stream).collect(Collectors.toList());
+//
+//        List<Long> collect1 = collect.stream().map(entity -> entity.getAttrId()).collect(Collectors.toList());
+//
+//        return collect1;
+//    }
+@Override
+public List<Long> selectSearchAttrs(List<Long> attrIds) {
+    LambdaQueryWrapper<AttrEntity> attrEntityWrapper = new LambdaQueryWrapper<>();
+    attrEntityWrapper.eq(AttrEntity::getSearchType, ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
 
-        List<AttrEntity> collect = attrIds.stream().map(item -> {
-            LambdaQueryWrapper<AttrEntity> attrEntityWrapper = new LambdaQueryWrapper<>();
-            attrEntityWrapper.eq(AttrEntity::getAttrId, item).eq(AttrEntity::getSearchType, ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
-            List<AttrEntity> attrEntities = baseMapper.selectList(attrEntityWrapper);
-            return attrEntities;
-        }).flatMap(List::stream).collect(Collectors.toList());
+    List<Long> result = attrIds.stream()
+            .map(item -> {
+                attrEntityWrapper.eq(AttrEntity::getAttrId, item);
+                return baseMapper.selectList(attrEntityWrapper);
+            })
+            .flatMap(List::stream)
+            .map(AttrEntity::getAttrId)
+            .collect(Collectors.toList());
 
-        List<Long> collect1 = collect.stream().map(entity -> entity.getAttrId()).collect(Collectors.toList());
+    return result;
+}
 
-        return collect1;
-    }
 
 
     @Override
