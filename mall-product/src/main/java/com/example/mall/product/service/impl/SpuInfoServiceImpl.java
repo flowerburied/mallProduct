@@ -256,15 +256,23 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         List<Long> skuIds = skus.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
         //            check if there is inventory available
-        Map<Long, Boolean> stockMap = null;
+        Map<Long, Boolean> stockMap = new HashMap<>(); // 或者使用其他 Map 实现类，根据需求选择
+
         try {
             R<List<SkuHasStockVo>> skuHasStock = wareFeignService.getSkuHasStock(skuIds);
-//        List<SkuHasStockVo> data = skuHasStock.getData();
-            stockMap = skuHasStock.getData().stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, item -> item.getStock()));
+//            List<SkuHasStockVo> datas = skuHasStock.getData();
+            List<SkuHasStockVo> datas = (List<SkuHasStockVo>) skuHasStock.getData();
+
+            for (SkuHasStockVo data : datas) {
+                stockMap.put(data.getSkuId(), data.getStock());
+            }
+
+            System.out.println("stockMap===" + stockMap);
 
         } catch (Exception e) {
             log.error("库存服务查询异常：{}", e);
         }
+
 //      Encapsulate information for each Skus
         Map<Long, Boolean> finalStockMap = stockMap;
         List<SkuEsModel> uoProduct = skus.stream().map((item) -> {
@@ -291,11 +299,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         //send data to ES for saving  mall-search
         R r = searchFeignService.productStatusUp(uoProduct);
+
         if (r.getCode() == 0) {
 //            modify status
             this.upDataSpuStatus(skuIds, ProductConstant.StatusEnum.SPU_UP.getCode());
 
-        }else{
+        } else {
 //           重复调用 接口幂等性 重试机制
 
 

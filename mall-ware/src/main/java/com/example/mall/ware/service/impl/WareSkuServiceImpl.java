@@ -134,17 +134,16 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             return Collections.emptyList();
         }
 
-        return wareSkuEntityList.stream().map(item -> {
+        List<SkuHasStockVo> collect = wareSkuEntityList.stream().map(item -> {
             SkuHasStockVo skuHasStockVo = new SkuHasStockVo();
             skuHasStockVo.setSkuId(item.getSkuId());
-
-            int stock = item.getStock() == null ? 0 : item.getStock();
-            int stockLocked = item.getStockLocked() == null ? 0 : item.getStockLocked();
-
-            skuHasStockVo.setStock(stock - stockLocked > 0);
-
+            long count = item.getStock() - item.getStockLocked();
+            skuHasStockVo.setStock(count > 0);
             return skuHasStockVo;
         }).collect(Collectors.toList());
+        System.out.println("collect=====:{}" + collect);
+
+        return collect;
     }
 
 
