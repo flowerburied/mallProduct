@@ -1,19 +1,16 @@
 package com.example.mall.ware.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.common.utils.R;
-import com.example.mall.ware.entity.WareInfoEntity;
 import com.example.mall.ware.feign.ProductFeignService;
+import com.example.mall.ware.vo.SkuHasStockVo;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.common.utils.PageUtils;
@@ -71,14 +68,14 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             wareSkuEntity.setStockLocked(0);
             //远程查询sku名字  如果失败事务无需回滚
             //自己catch异常
-            try{
+            try {
                 R info = productFeignService.info(skuId);
-                Map<String,Object> data = (Map<String, Object>) info.get("skuInfo");
-                if (info.getCode()==0){
+                Map<String, Object> data = (Map<String, Object>) info.get("skuInfo");
+                if (info.getCode() == 0) {
                     wareSkuEntity.setSkuName((String) data.get("skuName"));
                 }
 
-            }catch (Exception e){
+            } catch (Exception e) {
 
             }
 
@@ -90,6 +87,30 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 baseMapper.updateById(item);
             });
         }
+    }
+
+
+//    SELECT SUM(stock-stock_locked) FROM `wms_ware_sku` WHERE sku_id=1
+    @Override
+    public List<SkuHasStockVo> getSkuHasStock(List<Long> skuIds) {
+        LambdaQueryWrapper<WareSkuEntity> wareWrapper = new LambdaQueryWrapper<>();
+        List<SkuHasStockVo> collect = skuIds.stream().map(item -> {
+            wareWrapper.eq(WareSkuEntity::getSkuId, item);
+            List<WareSkuEntity> wareSkuEntities = baseMapper.selectList(wareWrapper);
+            SkuHasStockVo skuHasStockVo = new SkuHasStockVo();
+            WareSkuEntity wareSkuEntity = new WareSkuEntity();
+            wareSkuEntities.forEach(e -> {
+                wareSkuEntity.setSkuId(e.getSkuId());
+                wareSkuEntity.setStock(e.getStock() + wareSkuEntity.getStock());
+                wareSkuEntity.setStockLocked(e.getStockLocked() + wareSkuEntity.getStockLocked());
+            });
+
+            skuHasStockVo.setSkuId(wareSkuEntity.getSkuId());
+            skuHasStockVo.setStock(wareSkuEntity.getStock() - wareSkuEntity.getStockLocked() > 0);
+
+            return skuHasStockVo;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
 }

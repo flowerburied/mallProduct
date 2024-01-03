@@ -16,10 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -233,6 +230,16 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         List<Long> attrEntities = attrService.selectSearchAttrs(attrIds);
 
+        Set<Long> longs = new HashSet<>(attrEntities);
+
+
+        List<SkuEsModel.Attrs> attrsList = baseAttrs.stream().filter(item -> longs.contains(item.getAttrId())).map(e -> {
+            SkuEsModel.Attrs attrs1 = new SkuEsModel.Attrs();
+            BeanUtils.copyProperties(e, attrs1);
+            return attrs1;
+        }).collect(Collectors.toList());
+
+
 //        Find out skuId all corresponding information ,Brand name
         List<SkuInfoEntity> skus = skuInfoService.getSkuByspuId(spuId);
 //      Encapsulate information for each Skus
@@ -243,12 +250,20 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
             skuEsModel.setSkuPrice(item.getPrice());
             skuEsModel.setSkuImg(item.getSkuDefaultImg());
+
+//            check if there is inventory available
+//            skuEsModel.setHasStock();
+
+            skuEsModel.setHotScore(0L);
+
             BrandEntity byId = brandService.getById(item.getBrandId());
             skuEsModel.setBrandImg(byId.getLogo());
             skuEsModel.setBrandName(byId.getName());
             CategoryEntity byId1 = categoryService.getById(item.getCatalogId());
             skuEsModel.setCatalogName(byId1.getName());
 
+            //set retrieval properties
+            skuEsModel.setAttrs(attrsList);
 
             return skuEsModel;
         }).collect(Collectors.toList());

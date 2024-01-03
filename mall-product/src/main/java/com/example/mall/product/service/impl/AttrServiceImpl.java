@@ -232,7 +232,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         return pageUtils;
     }
 
-//    @Override
+    //    @Override
 //    public List<Long> selectSearchAttrs(List<Long> attrIds) {
 //
 //        List<AttrEntity> collect = attrIds.stream().map(item -> {
@@ -246,23 +246,22 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
 //
 //        return collect1;
 //    }
-@Override
-public List<Long> selectSearchAttrs(List<Long> attrIds) {
-    LambdaQueryWrapper<AttrEntity> attrEntityWrapper = new LambdaQueryWrapper<>();
-    attrEntityWrapper.eq(AttrEntity::getSearchType, ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
+    @Override
+    public List<Long> selectSearchAttrs(List<Long> attrIds) {
+        LambdaQueryWrapper<AttrEntity> attrEntityWrapper = new LambdaQueryWrapper<>();
+        attrEntityWrapper.eq(AttrEntity::getSearchType, ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
 
-    List<Long> result = attrIds.stream()
-            .map(item -> {
-                attrEntityWrapper.eq(AttrEntity::getAttrId, item);
-                return baseMapper.selectList(attrEntityWrapper);
-            })
-            .flatMap(List::stream)
-            .map(AttrEntity::getAttrId)
-            .collect(Collectors.toList());
+        List<Long> result = attrIds.stream()
+                .map(item -> {
+                    attrEntityWrapper.eq(AttrEntity::getAttrId, item);
+                    return baseMapper.selectList(attrEntityWrapper);
+                })
+                .flatMap(List::stream)
+                .map(AttrEntity::getAttrId)
+                .collect(Collectors.toList());
 
-    return result;
-}
-
+        return result;
+    }
 
 
     @Override
