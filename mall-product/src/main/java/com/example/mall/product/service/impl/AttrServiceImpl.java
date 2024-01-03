@@ -69,7 +69,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         this.save(attrEntity);
 //        baseMapper.insert(attrEntity);
         System.out.println("attrEntity===" + attrEntity);
-        if (attr.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode() && attr.getAttrGroupId()!=null) {
+        if (attr.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode() && attr.getAttrGroupId() != null) {
             AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = new AttrAttrgroupRelationEntity();
             attrAttrgroupRelationEntity.setAttrGroupId(attr.getAttrGroupId());
             attrAttrgroupRelationEntity.setAttrId(attrEntity.getAttrId());
@@ -230,6 +230,21 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         PageUtils pageUtils = new PageUtils(attrEntityIPage);
 
         return pageUtils;
+    }
+
+    @Override
+    public List<Long> selectSearchAttrs(List<Long> attrIds) {
+
+        List<AttrEntity> collect = attrIds.stream().map(item -> {
+            LambdaQueryWrapper<AttrEntity> attrEntityWrapper = new LambdaQueryWrapper<>();
+            attrEntityWrapper.eq(AttrEntity::getAttrId, item).eq(AttrEntity::getSearchType, ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
+            List<AttrEntity> attrEntities = baseMapper.selectList(attrEntityWrapper);
+            return attrEntities;
+        }).flatMap(List::stream).collect(Collectors.toList());
+
+        List<Long> collect1 = collect.stream().map(entity -> entity.getAttrId()).collect(Collectors.toList());
+
+        return collect1;
     }
 
 

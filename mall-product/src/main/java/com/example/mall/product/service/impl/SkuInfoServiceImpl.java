@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -84,6 +85,17 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
         );
 
         return new PageUtils(page);
+
+
+    }
+
+    @Override
+    public List<SkuInfoEntity> getSkuByspuId(Long spuId) {
+
+        LambdaQueryWrapper<SkuInfoEntity> skuWrapper = new LambdaQueryWrapper<>();
+        skuWrapper.eq(SkuInfoEntity::getSpuId, spuId);
+        List<SkuInfoEntity> skuInfoEntities = baseMapper.selectList(skuWrapper);
+        return skuInfoEntities;
 
 
     }

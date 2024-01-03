@@ -3,6 +3,7 @@ package com.example.mall.product.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.common.to.SkuReductionTo;
 import com.example.common.to.SpuBoundTo;
+import com.example.common.to.es.SkuEsModel;
 import com.example.common.utils.R;
 import com.example.mall.product.dao.SpuInfoDescDao;
 import com.example.mall.product.entity.*;
@@ -15,6 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +52,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     SkuSaleAttrValueService skuSaleAttrValueService;
     @Resource
     CouponFeignService couponFeignService;
+    @Resource
+    BrandService brandService;
+    @Resource
+    CategoryService categoryService;
+    @Resource
+    AttrService attrService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -208,6 +216,45 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                 spuInfoWrapper
         );
         return new PageUtils(page);
+    }
+
+    /**
+     * 商品上架
+     *
+     * @param spuId
+     */
+    @Override
+    public void spuUp(Long spuId) {
+
+//        Model required for assembly
+
+        List<ProductAttrValueEntity> baseAttrs = productAttrValueService.baseAttrListForSpu(spuId);
+        List<Long> attrIds = baseAttrs.stream().map(attrs -> attrs.getAttrId()).collect(Collectors.toList());
+
+        List<Long> attrEntities = attrService.selectSearchAttrs(attrIds);
+
+//        Find out skuId all corresponding information ,Brand name
+        List<SkuInfoEntity> skus = skuInfoService.getSkuByspuId(spuId);
+//      Encapsulate information for each Skus
+        List<SkuEsModel> uoProduct = skus.stream().map((item) -> {
+            SkuEsModel skuEsModel = new SkuEsModel();
+            BeanUtils.copyProperties(item, skuEsModel);
+
+
+            skuEsModel.setSkuPrice(item.getPrice());
+            skuEsModel.setSkuImg(item.getSkuDefaultImg());
+            BrandEntity byId = brandService.getById(item.getBrandId());
+            skuEsModel.setBrandImg(byId.getLogo());
+            skuEsModel.setBrandName(byId.getName());
+            CategoryEntity byId1 = categoryService.getById(item.getCatalogId());
+            skuEsModel.setCatalogName(byId1.getName());
+
+
+            return skuEsModel;
+        }).collect(Collectors.toList());
+
+        //send data to ES for saving  mall-search
+
     }
 
     private String getString(Map<String, Object> params, String key) {
