@@ -7,6 +7,7 @@ import com.example.common.to.SkuHasStockVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -91,56 +92,59 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
 
 
     //    SELECT SUM(stock-stock_locked) FROM `wms_ware_sku` WHERE sku_id=1
-//    @Override
+
+    //    @Override
 //    public List<SkuHasStockVo> getSkuHasStock(List<Long> skuIds) {
-//        LambdaQueryWrapper<WareSkuEntity> wareWrapper = new LambdaQueryWrapper<>();
-//        List<SkuHasStockVo> collect = skuIds.stream().map(item -> {
-//            wareWrapper.eq(WareSkuEntity::getSkuId, item);
-//            List<WareSkuEntity> wareSkuEntities = baseMapper.selectList(wareWrapper);
-//            SkuHasStockVo skuHasStockVo = new SkuHasStockVo();
-//            WareSkuEntity wareSkuEntity = new WareSkuEntity();
-//            wareSkuEntities.forEach(e -> {
-//                wareSkuEntity.setSkuId(e.getSkuId());
-//                wareSkuEntity.setStock(e.getStock() + wareSkuEntity.getStock());
-//                wareSkuEntity.setStockLocked(e.getStockLocked() + wareSkuEntity.getStockLocked());
-//            });
+//        List<WareSkuEntity> wareSkuEntityList = skuIds.stream().map(skuId -> {
+//            LambdaQueryWrapper<WareSkuEntity> wareWrapper = new LambdaQueryWrapper<>();
+//            wareWrapper.eq(WareSkuEntity::getSkuId, skuId);
 //
-//            skuHasStockVo.setSkuId(wareSkuEntity.getSkuId());
-//            skuHasStockVo.setStock(wareSkuEntity.getStock() - wareSkuEntity.getStockLocked() > 0);
+//            List<WareSkuEntity> wareSkuEntities = baseMapper.selectList(wareWrapper);
+//
+//            return wareSkuEntities;
+//        }).flatMap(List::stream).collect(Collectors.toList());
+//        if (wareSkuEntityList.size() == 0 || wareSkuEntityList == null) {
+//            return null;
+//        }
+//
+//        List<SkuHasStockVo> skuHasStockVoList = wareSkuEntityList.stream().map(item -> {
+//            SkuHasStockVo skuHasStockVo = new SkuHasStockVo();
+//            skuHasStockVo.setSkuId(item.getSkuId());
+//
+//            WareSkuEntity wareSkuEntity = new WareSkuEntity();
+//
+//            wareSkuEntity.setStock(wareSkuEntity.getStock() == null ? 0 : wareSkuEntity.getStock() + item.getStock());
+//            wareSkuEntity.setStockLocked(wareSkuEntity.getStockLocked() == null ? 0 : wareSkuEntity.getStockLocked() + item.getStockLocked());
+//
+//            skuHasStockVo.setStock(wareSkuEntity.getStock() - wareSkuEntity.getStockLocked()  > 0);
 //
 //            return skuHasStockVo;
 //        }).collect(Collectors.toList());
-//        return collect;
+//
+//        return skuHasStockVoList;
 //    }
     @Override
     public List<SkuHasStockVo> getSkuHasStock(List<Long> skuIds) {
-        List<WareSkuEntity> wareSkuEntityList = skuIds.stream().map(skuId -> {
-            LambdaQueryWrapper<WareSkuEntity> wareWrapper = new LambdaQueryWrapper<>();
-            wareWrapper.eq(WareSkuEntity::getSkuId, skuId);
-
-            List<WareSkuEntity> wareSkuEntities = baseMapper.selectList(wareWrapper);
-
-            return wareSkuEntities;
-        }).flatMap(List::stream).collect(Collectors.toList());
-        if (wareSkuEntityList.size() == 0 || wareSkuEntityList == null) {
-            return null;
+        if (skuIds == null || skuIds.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        List<SkuHasStockVo> skuHasStockVoList = wareSkuEntityList.stream().map(item -> {
+        List<WareSkuEntity> wareSkuEntityList = baseMapper.selectList(new LambdaQueryWrapper<WareSkuEntity>().in(WareSkuEntity::getSkuId, skuIds));
+        if (wareSkuEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return wareSkuEntityList.stream().map(item -> {
             SkuHasStockVo skuHasStockVo = new SkuHasStockVo();
             skuHasStockVo.setSkuId(item.getSkuId());
 
-            WareSkuEntity wareSkuEntity = new WareSkuEntity();
+            int stock = item.getStock() == null ? 0 : item.getStock();
+            int stockLocked = item.getStockLocked() == null ? 0 : item.getStockLocked();
 
-            wareSkuEntity.setStock(wareSkuEntity.getStock() == null ? 0 : wareSkuEntity.getStock() + item.getStock());
-            wareSkuEntity.setStockLocked(wareSkuEntity.getStockLocked() == null ? 0 : wareSkuEntity.getStockLocked() + item.getStockLocked());
-
-            skuHasStockVo.setStock(wareSkuEntity.getStock() - wareSkuEntity.getStockLocked()  > 0);
+            skuHasStockVo.setStock(stock - stockLocked > 0);
 
             return skuHasStockVo;
         }).collect(Collectors.toList());
-
-        return skuHasStockVoList;
     }
 
 
