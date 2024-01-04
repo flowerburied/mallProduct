@@ -1,5 +1,8 @@
 package com.example.mall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.common.constant.ProductConstant;
@@ -256,18 +259,23 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         List<Long> skuIds = skus.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
         //            check if there is inventory available
-        Map<Long, Boolean> stockMap = new HashMap<>(); // 或者使用其他 Map 实现类，根据需求选择
-
+        Map<Long, Boolean> stockMap = null; // 或者使用其他 Map 实现类，根据需求选择
+//        Map<Long, Boolean> stockMaptest = null;
         try {
             R<List<SkuHasStockVo>> skuHasStock = wareFeignService.getSkuHasStock(skuIds);
-//            List<SkuHasStockVo> datas = skuHasStock.getData();
-            List<SkuHasStockVo> datas = (List<SkuHasStockVo>) skuHasStock.getData();
+            List<SkuHasStockVo> data = skuHasStock.getData();
 
-            for (SkuHasStockVo data : datas) {
-                stockMap.put(data.getSkuId(), data.getStock());
-            }
+            String providers = JSON.toJSONString(data);
+            JSONArray objects = JSONArray.parseArray(providers);
+            List<SkuHasStockVo> skuHasStockVoList = objects.toJavaList(SkuHasStockVo.class);
 
-            System.out.println("stockMap===" + stockMap);
+            Map<Long, Boolean> collect = skuHasStockVoList.stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, item -> item.getStock()));
+
+
+            System.out.println("collect===" + collect);
+
+            stockMap = collect;
+
 
         } catch (Exception e) {
             log.error("库存服务查询异常：{}", e);

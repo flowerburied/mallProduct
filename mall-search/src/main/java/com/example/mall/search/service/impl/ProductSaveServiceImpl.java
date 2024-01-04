@@ -31,9 +31,7 @@ public class ProductSaveServiceImpl implements ProductSaveService {
     @Override
     public boolean productStatusUp(List<SkuEsModel> skuEsModels) throws IOException {
         //save to elasticSearch
-
 //        es creat index
-
 //        BulkRequest bulkRequest, RequestOptions options
         BulkRequest bulkRequest = new BulkRequest();
 
@@ -43,7 +41,6 @@ public class ProductSaveServiceImpl implements ProductSaveService {
             indexRequest.id(item.getSkuId().toString());
             String s = JSON.toJSONString(item);
             indexRequest.source(s, XContentType.JSON);
-
             bulkRequest.add(indexRequest);
 
         });
