@@ -19,8 +19,6 @@ import java.util.Map;
  * @author Mark sunlightcs@gmail.com
  */
 
-import org.apache.http.HttpStatus; // Assuming you're using HttpStatus from Apache HTTP Components
-
 public class R<T> extends HashMap<String, Object> {
     private static final long serialVersionUID = 1L;
 
