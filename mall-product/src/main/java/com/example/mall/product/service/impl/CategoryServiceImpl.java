@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -173,22 +174,37 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", uuid, 30, TimeUnit.SECONDS);
 //                .setIfAbsent("lock", "111");
         if (lock) {
+            System.out.println("获取分布式锁成功");
 //            加锁成功
 //            设置过期时间和加锁必须是同步的
 //            redisTemplate.expire("lock", 30, TimeUnit.SECONDS);
-            Map<String, List<Catelog2Vo>> dataFromDb = getDataFromDb();
-
-            String lockValue = redisTemplate.opsForValue().get("lock");
-            if (uuid.equals(lockValue)) {
-//                删除我自己的锁
-                redisTemplate.delete("lock");
+            Map<String, List<Catelog2Vo>> dataFromDb;
+            try {
+                dataFromDb = getDataFromDb();
+            } finally {
+                //            String lockValue = redisTemplate.opsForValue().get("lock");
+//            if (uuid.equals(lockValue)) {
+////                删除我自己的锁
+//                redisTemplate.delete("lock");
+//            }
+                // lua 脚本解锁
+                String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+                // 原子删除锁  成功1失败0
+                redisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class),
+                        Arrays.asList("lock"), uuid);
             }
+
 
             return dataFromDb;
         } else {
+            System.out.println("获取分布式锁失败等待重试。。。");
 //            加锁失败。。。重试-自旋
 //            休眠100ms重试
-
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return getCateLogJsonFromDbWithRedisLock();
         }
 
