@@ -169,9 +169,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
 
 //        占分布式锁，去redis占坑
-        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", "111");
+        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", "111", 30, TimeUnit.SECONDS);
+//                .setIfAbsent("lock", "111");
         if (lock) {
 //            加锁成功
+//            设置过期时间和加锁必须是同步的
+//            redisTemplate.expire("lock", 30, TimeUnit.SECONDS);
             Map<String, List<Catelog2Vo>> dataFromDb = getDataFromDb();
 
             redisTemplate.delete("lock");
