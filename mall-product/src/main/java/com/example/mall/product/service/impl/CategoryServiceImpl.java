@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -137,7 +138,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 //not in cache
             Map<String, List<Catelog2Vo>> cateLogJsonFromDb = getCateLogJsonFromDb();
 //retrieve data and place it in cache
-            redisTemplate.opsForValue().set("catalogJSON", JSON.toJSONString(cateLogJsonFromDb));
+            redisTemplate.opsForValue().set("catalogJSON", JSON.toJSONString(cateLogJsonFromDb),1, TimeUnit.DAYS);
 
         }
         Map<String, List<Catelog2Vo>> stringListMap = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2Vo>>>() {
