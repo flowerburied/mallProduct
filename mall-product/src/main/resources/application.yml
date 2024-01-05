@@ -10,6 +10,11 @@ spring:
         server-addr: 127.0.0.1:8848
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+  thymeleaf:
+    cache: false
+  redis:
+    host: 192.168.18.128
+    port: 6380
 #  application:
 #    name: mall-product
 mybatis-plus:
@@ -32,4 +37,4 @@ alibaba:
 
 logging:
   level:
-    com.example.mall: debug
+    com.example.mall: error

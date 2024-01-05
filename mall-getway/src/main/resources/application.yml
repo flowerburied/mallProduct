@@ -23,7 +23,7 @@ spring:
         - id: product_route
           uri: lb://mall-product
           predicates:
-            - Path=/api/product/**
+            - Path=/api/product/**,/hello
           filters:
             - RewritePath=/api/(?<segment>.*),/$\{segment}
         - id: ware_route
@@ -45,4 +45,9 @@ spring:
             - Path=/api/**
           filters:
             - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}
+
+        - id: mall_host_route
+          uri: lb://mall-product
+          predicates:
+            - Host=**.mall.com
 
