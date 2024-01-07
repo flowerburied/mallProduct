@@ -3,6 +3,7 @@ package com.example.mall.product.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.common.constant.ProductConstant;
@@ -262,19 +263,11 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         Map<Long, Boolean> stockMap = null; // 或者使用其他 Map 实现类，根据需求选择
 //        Map<Long, Boolean> stockMaptest = null;
         try {
-            R<List<SkuHasStockVo>> skuHasStock = wareFeignService.getSkuHasStock(skuIds);
-            List<SkuHasStockVo> data = skuHasStock.getData();
+            R hasStock = wareFeignService.getSkuHasStock(skuIds);
+            TypeReference<List<SkuHasStockVo>> typeReference = new TypeReference<List<SkuHasStockVo>>() {
+            };
 
-            String providers = JSON.toJSONString(data);
-            JSONArray objects = JSONArray.parseArray(providers);
-            List<SkuHasStockVo> skuHasStockVoList = objects.toJavaList(SkuHasStockVo.class);
-
-            Map<Long, Boolean> collect = skuHasStockVoList.stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, item -> item.getStock()));
-
-
-            System.out.println("collect===" + collect);
-
-            stockMap = collect;
+            stockMap = hasStock.getData(typeReference).stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, item -> item.getStock()));
 
 
         } catch (Exception e) {

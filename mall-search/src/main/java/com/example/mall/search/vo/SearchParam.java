@@ -22,7 +22,7 @@ public class SearchParam {
 
     /**
      * 过滤:
-     *仅显示有货:hasStock=0/1
+     *仅显示有货:hasStock=0（无）/1（有）
      *价格区间:skuPrice=1_500/_500/500_
      * 品牌(多选)
      * 商品属性(多选)

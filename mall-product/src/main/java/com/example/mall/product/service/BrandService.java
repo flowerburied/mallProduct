@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.common.utils.PageUtils;
 import com.example.mall.product.entity.BrandEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,5 +20,6 @@ public interface BrandService extends IService<BrandEntity> {
 
     void updateDetail(BrandEntity brand);
 
+    List<BrandEntity> getBrands(List<Long> brandId);
 }
 

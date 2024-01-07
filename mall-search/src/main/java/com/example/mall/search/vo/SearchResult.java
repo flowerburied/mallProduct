@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class SearchResponse {
+public class SearchResult {
     private List<SkuEsModel> products;
 
     /**

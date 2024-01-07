@@ -1,9 +1,11 @@
 package com.example.mall.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.mall.product.dao.CategoryBrandRelationDao;
 import com.example.mall.product.service.CategoryBrandRelationService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -55,6 +57,16 @@ public class BrandServiceImpl extends ServiceImpl<BrandDao, BrandEntity> impleme
         }
 
 
+    }
+
+    @Override
+    public List<BrandEntity> getBrands(List<Long> brandId) {
+
+        LambdaQueryWrapper<BrandEntity> brandWrapper = new LambdaQueryWrapper<>();
+        brandWrapper.in(BrandEntity::getBrandId, brandId);
+
+        List<BrandEntity> list = baseMapper.selectList(brandWrapper);
+        return list;
     }
 
 }

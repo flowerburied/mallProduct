@@ -29,10 +29,10 @@ public class WareSkuController {
 
 
     @PostMapping("/hasStock")
-    public R<List<SkuHasStockVo>> getSkuHasStock(@RequestBody List<Long> skuIds) {
+    public R getSkuHasStock(@RequestBody List<Long> skuIds) {
 
         List<SkuHasStockVo> skuHasStockVoList = wareSkuService.getSkuHasStock(skuIds);
-        R<List<SkuHasStockVo>> ok = R.ok();
+        R ok = R.ok();
         ok.setData(skuHasStockVoList);
         return ok;
     }

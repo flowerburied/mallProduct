@@ -4,12 +4,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.example.common.to.SkuHasStockVo;
 import com.example.mall.product.entity.ProductAttrValueEntity;
 import com.example.mall.product.service.ProductAttrValueService;
 import com.example.mall.product.vo.AttrRespondVo;
 import com.example.mall.product.vo.AttrVo;
 import com.sun.org.apache.xpath.internal.objects.XObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.mall.product.entity.AttrEntity;
@@ -37,7 +39,7 @@ public class AttrController {
     @GetMapping("/base/listforspu/{spuId}")
     public R baseAttrListForSpu(
             @PathVariable("spuId") Long spuId) {
-      List<ProductAttrValueEntity> entities= productAttrValueService.baseAttrListForSpu(spuId);
+        List<ProductAttrValueEntity> entities = productAttrValueService.baseAttrListForSpu(spuId);
 
         return R.ok().put("data", null);
     }
@@ -69,12 +71,14 @@ public class AttrController {
     /**
      * 信息
      */
+    @Cacheable(value = "attr", key = "'attrinfo'+#root.args[0]")
     @RequestMapping("/info/{attrId}")
     public R info(@PathVariable("attrId") Long attrId) {
 //        AttrEntity attr = attrService.getById(attrId);
         AttrRespondVo attr = attrService.getAttrInfo(attrId);
         return R.ok().put("attr", attr);
     }
+
 
     /**
      * 保存
@@ -99,9 +103,9 @@ public class AttrController {
     @PostMapping("/update/{spuId}")
     public R updateSpuAttr(
             @PathVariable Long spuId,
-            @RequestBody List<ProductAttrValueEntity> productAttrValueEntities){
+            @RequestBody List<ProductAttrValueEntity> productAttrValueEntities) {
 
-        productAttrValueService.updateSpuAttr(spuId,productAttrValueEntities);
+        productAttrValueService.updateSpuAttr(spuId, productAttrValueEntities);
 
         return R.ok();
     }
