@@ -59,11 +59,11 @@
             </ul>
             <ul class="header_ul_right">
                 <li style="border: 0;">
-                    <a href="http://auth.gulimall.com/login.html" th:if="${session.loginUser==null}"
+                    <a href="http://auth.mall.com/login.html" th:if="${session.loginUser==null}"
                        class="aa">你好，请登录</a>
                     <a th:else class="aa" style="width: 100px">[[${session.loginUser==null?'':session.loginUser.nickname}]]</a>
                 </li>
-                <li><a href="http://auth.gulimall.com/reg.html" class="li_2" th:if="${session.loginUser==null}">免费注册</a>
+                <li><a href="http://auth.mall.com/reg.html" class="li_2" th:if="${session.loginUser==null}">免费注册</a>
                     |
                 </li>
                 <li><a href="/static/item/javascript:;" class="aa">我的订单</a> |</li>
@@ -650,7 +650,7 @@
                         </div>
                     </div>
                     <div class="box-btns-two" th:if="${item.seckillInfo==null }">
-                        <a href="http://cart.gulimall.com/addToCart" id="addToCartA" th:attr="skuId=${item.info.skuId}">
+                        <a href="http://cart.mall.com/addToCart" id="addToCartA" th:attr="skuId=${item.info.skuId}">
                             加入购物车
                         </a>
                     </div>
@@ -663,7 +663,7 @@
                     </div>
                     <div class="box-btns-two" th:if="${item.seckillInfo!=null && (#dates.createNow().getTime()< item.seckillInfo.startTime ||
                          #dates.createNow().getTime()> item.seckillInfo.endTime)}">
-                        <a href="http://cart.gulimall.com/addToCart" id="addToCartA" th:attr="skuId=${item.info.skuId}">
+                        <a href="http://cart.mall.com/addToCart" id="addToCartA" th:attr="skuId=${item.info.skuId}">
                             加入购物车
                         </a>
                     </div>
@@ -1277,7 +1277,7 @@
         }
         console.log(filterEle[0]);
         //3.跳转
-        location.href = "http://item.gulimall.com/" + filterEle[0] + ".html";
+        location.href = "http://item.mall.com/" + filterEle[0] + ".html";
     });
     $(function () {
         $(".sku_attr_value").parent().css({"border": "solid 1px #CCC"});
@@ -1287,7 +1287,7 @@
     $("#addToCartA").click(function () {
         var num = $("#numInput").val();
         var skuId = $(this).attr("skuId");
-        location.href = "http://cart.gulimall.com/addToCart?skuId=" + skuId + "&num=" + num;
+        location.href = "http://cart.mall.com/addToCart?skuId=" + skuId + "&num=" + num;
         return false;
     });
 
@@ -1297,7 +1297,7 @@
             var killId = $(this).attr("sessionId") + "_" + $(this).attr("skuId");
             var key = $(this).attr("code");
             var num = $("#numInput").val();
-            location.href = "http://seckill.gulimall.com/kill?killId=" + killId + "&key=" + key + "&num=" + num;
+            location.href = "http://seckill.mall.com/kill?killId=" + killId + "&key=" + key + "&num=" + num;
         }else {
             alert("秒杀请先登录")
         }

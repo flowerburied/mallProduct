@@ -1,7 +1,12 @@
 package com.example.mall.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.mall.product.entity.SkuImagesEntity;
+import com.example.mall.product.entity.SpuInfoDescEntity;
 import com.example.mall.product.entity.SpuInfoEntity;
+import com.example.mall.product.service.*;
+import com.example.mall.product.vo.skuItemvo.SkuItemVo;
+import com.example.mall.product.vo.skuItemvo.SpuItemAttrGroupVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +22,19 @@ import com.example.common.utils.Query;
 
 import com.example.mall.product.dao.SkuInfoDao;
 import com.example.mall.product.entity.SkuInfoEntity;
-import com.example.mall.product.service.SkuInfoService;
+
+import javax.annotation.Resource;
 
 
 @Service("skuInfoService")
 public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> implements SkuInfoService {
+
+    @Resource
+    SkuImagesService skuImagesService;
+    @Resource
+    SpuInfoDescService spuInfoDescService;
+    @Resource
+    AttrGroupService attrGroupService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -99,5 +112,31 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
 
 
     }
+
+    @Override
+    public SkuItemVo item(Long skuId) {
+        SkuItemVo skuItemVo = new SkuItemVo();
+
+//sku基本信息
+        SkuInfoEntity skuInfoEntity = baseMapper.selectById(skuId);
+        Long spuId = skuInfoEntity.getSpuId();
+        Long catalogId = skuInfoEntity.getCatalogId();
+        skuItemVo.setInfo(skuInfoEntity);
+//        sku图片信息
+        List<SkuImagesEntity> skuImagesEntity = skuImagesService.getImagesBySkuId(skuId);
+
+        skuItemVo.setImagesEntites(skuImagesEntity);
+//spu销售组合
+
+//        获取spu介绍
+
+        SpuInfoDescEntity spuInfoDescEntity = spuInfoDescService.getById(spuId);
+        skuItemVo.setDesp(spuInfoDescEntity);
+//        获取spu规格参数信息
+        List<SpuItemAttrGroupVo> SpuItemAttrGroupEntity = attrGroupService.getAttrGroupWithAttrBySpuId(spuId,catalogId);
+        skuItemVo.setGroupAttrs(SpuItemAttrGroupEntity);
+        return skuItemVo;
+    }
+
 
 }

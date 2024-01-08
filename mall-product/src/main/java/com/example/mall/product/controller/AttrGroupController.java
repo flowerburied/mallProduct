@@ -13,6 +13,7 @@ import com.example.mall.product.service.CategoryService;
 import com.example.mall.product.vo.AttrGroupRelationVo;
 import com.example.mall.product.vo.AttrGroupWithAttrVo;
 import com.example.mall.product.vo.AttrRespondVo;
+import com.example.mall.product.vo.skuItemvo.SpuItemAttrGroupVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +44,14 @@ public class AttrGroupController {
 
     @Resource
     AttrAttrgroupRelationService attrAttrgroupRelationService;
+
+    @GetMapping("/test/{cateLogId}/{spuId}")
+    public R testVo(@PathVariable("cateLogId") Long cateLogId, @PathVariable("spuId") Long spuId) {
+        List<SpuItemAttrGroupVo> attrGroupWithAttrBySpuId = attrGroupService.getAttrGroupWithAttrBySpuId(spuId, cateLogId);
+
+        return R.ok().put("data", attrGroupWithAttrBySpuId);
+
+    }
 
 
     //    attrgroup/165/withattr?t=1703929253540
