@@ -56,45 +56,82 @@ public class SkuSaleAttrValueServiceImpl extends ServiceImpl<SkuSaleAttrValueDao
 //    ssav.attr_id,
 //    ssav.attr_name,
 //    ssav.attr_value
-
     @Override
     public List<SkuItemSaleAttrsVo> getSaleAttrsBySpuId(Long spuId) {
-        LambdaQueryWrapper<SkuInfoEntity> skuInfoWrapper = new LambdaQueryWrapper<>();
-        skuInfoWrapper.eq(SkuInfoEntity::getSpuId, spuId);
-        List<SkuInfoEntity> skuInfoEntities = skuInfoDao.selectList(skuInfoWrapper);
-        List<Long> infoIds = skuInfoEntities.stream().map(item -> item.getSkuId()).collect(Collectors.toList());
+        List<SkuInfoEntity> skuInfoEntities = skuInfoDao.selectList(new LambdaQueryWrapper<SkuInfoEntity>().eq(SkuInfoEntity::getSpuId, spuId));
 
-        LambdaQueryWrapper<SkuSaleAttrValueEntity> skuSaleWrapper = new LambdaQueryWrapper<>();
-        skuSaleWrapper.in(SkuSaleAttrValueEntity::getSkuId, infoIds);
-        List<SkuSaleAttrValueEntity> skuSaleAttrValueEntities = baseMapper.selectList(skuSaleWrapper);
+        List<Long> infoIds = skuInfoEntities.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
+
+        List<SkuSaleAttrValueEntity> skuSaleAttrValueEntities = baseMapper.selectList(new LambdaQueryWrapper<SkuSaleAttrValueEntity>().in(SkuSaleAttrValueEntity::getSkuId, infoIds));
 
         Map<String, SkuItemSaleAttrsVo> resultMap = new HashMap<>();
-        for (SkuSaleAttrValueEntity skuSaleAttrValueEntity : skuSaleAttrValueEntities) {
+
+        skuSaleAttrValueEntities.forEach(skuSaleAttrValueEntity -> {
             String key = skuSaleAttrValueEntity.getAttrId() + "_" + skuSaleAttrValueEntity.getAttrName() + "_" + skuSaleAttrValueEntity.getAttrValue();
-            SkuItemSaleAttrsVo skuItemSaleAttrsVo = resultMap.computeIfAbsent(key, k -> new SkuItemSaleAttrsVo());
 
-            skuItemSaleAttrsVo.setAttrId(skuSaleAttrValueEntity.getAttrId());
-            skuItemSaleAttrsVo.setAttrName(skuSaleAttrValueEntity.getAttrName());
+            resultMap.computeIfAbsent(key, k -> {
+                SkuItemSaleAttrsVo skuItemSaleAttrsVo = new SkuItemSaleAttrsVo();
+                skuItemSaleAttrsVo.setAttrId(skuSaleAttrValueEntity.getAttrId());
+                skuItemSaleAttrsVo.setAttrName(skuSaleAttrValueEntity.getAttrName());
+                skuItemSaleAttrsVo.setAttrValues(new ArrayList<>());
+                return skuItemSaleAttrsVo;
+            });
 
-            SkuItemSaleAttrsVo orDefault = resultMap.getOrDefault(key, skuItemSaleAttrsVo);
+            SkuItemSaleAttrsVo skuItemSaleAttrsVo = resultMap.get(key);
+            List<AttrValueWithSkuIdVo> attrValues = skuItemSaleAttrsVo.getAttrValues();
 
-            if (orDefault.getAttrValues() != null && orDefault.getAttrValues().size() > 0) {
-                List<AttrValueWithSkuIdVo> attrValues = orDefault.getAttrValues();
+            if (!attrValues.isEmpty()) {
                 AttrValueWithSkuIdVo attrValueWithSkuIdVo = attrValues.get(0);
-                attrValueWithSkuIdVo.setSkuIds(attrValueWithSkuIdVo.getSkuIds() + "," + skuSaleAttrValueEntity.getSkuId().toString());
+                attrValueWithSkuIdVo.setSkuIds(attrValueWithSkuIdVo.getSkuIds() + "," + skuSaleAttrValueEntity.getSkuId());
             } else {
-                List<AttrValueWithSkuIdVo> list = new ArrayList<>();
                 AttrValueWithSkuIdVo attrValueWithSkuIdVo = new AttrValueWithSkuIdVo();
                 attrValueWithSkuIdVo.setAttrValue(skuSaleAttrValueEntity.getAttrValue());
-                String skuId = skuSaleAttrValueEntity.getSkuId().toString();
-                attrValueWithSkuIdVo.setSkuIds(skuId);
-                list.add(attrValueWithSkuIdVo);
-                orDefault.setAttrValues(list);
+                attrValueWithSkuIdVo.setSkuIds(String.valueOf(skuSaleAttrValueEntity.getSkuId()));
+                attrValues.add(attrValueWithSkuIdVo);
             }
-            resultMap.put(key, orDefault);
-        }
-        List<SkuItemSaleAttrsVo> collect = resultMap.values().stream().collect(Collectors.toList());
-        return collect;
+        });
+
+        return new ArrayList<>(resultMap.values());
     }
+
+//    @Override
+//    public List<SkuItemSaleAttrsVo> getSaleAttrsBySpuId(Long spuId) {
+//        LambdaQueryWrapper<SkuInfoEntity> skuInfoWrapper = new LambdaQueryWrapper<>();
+//        skuInfoWrapper.eq(SkuInfoEntity::getSpuId, spuId);
+//        List<SkuInfoEntity> skuInfoEntities = skuInfoDao.selectList(skuInfoWrapper);
+//        List<Long> infoIds = skuInfoEntities.stream().map(item -> item.getSkuId()).collect(Collectors.toList());
+//
+//        LambdaQueryWrapper<SkuSaleAttrValueEntity> skuSaleWrapper = new LambdaQueryWrapper<>();
+//        skuSaleWrapper.in(SkuSaleAttrValueEntity::getSkuId, infoIds);
+//        List<SkuSaleAttrValueEntity> skuSaleAttrValueEntities = baseMapper.selectList(skuSaleWrapper);
+//
+//        Map<String, SkuItemSaleAttrsVo> resultMap = new HashMap<>();
+//        for (SkuSaleAttrValueEntity skuSaleAttrValueEntity : skuSaleAttrValueEntities) {
+//            String key = skuSaleAttrValueEntity.getAttrId() + "_" + skuSaleAttrValueEntity.getAttrName() + "_" + skuSaleAttrValueEntity.getAttrValue();
+//            SkuItemSaleAttrsVo skuItemSaleAttrsVo = resultMap.computeIfAbsent(key, k -> new SkuItemSaleAttrsVo());
+//
+//            skuItemSaleAttrsVo.setAttrId(skuSaleAttrValueEntity.getAttrId());
+//            skuItemSaleAttrsVo.setAttrName(skuSaleAttrValueEntity.getAttrName());
+//
+//            SkuItemSaleAttrsVo orDefault = resultMap.getOrDefault(key, skuItemSaleAttrsVo);
+//
+//            if (orDefault.getAttrValues() != null && orDefault.getAttrValues().size() > 0) {
+//                List<AttrValueWithSkuIdVo> attrValues = orDefault.getAttrValues();
+//                AttrValueWithSkuIdVo attrValueWithSkuIdVo = attrValues.get(0);
+//                attrValueWithSkuIdVo.setSkuIds(attrValueWithSkuIdVo.getSkuIds() + "," + skuSaleAttrValueEntity.getSkuId().toString());
+//            } else {
+//                List<AttrValueWithSkuIdVo> list = new ArrayList<>();
+//                AttrValueWithSkuIdVo attrValueWithSkuIdVo = new AttrValueWithSkuIdVo();
+//                attrValueWithSkuIdVo.setAttrValue(skuSaleAttrValueEntity.getAttrValue());
+//                String skuId = skuSaleAttrValueEntity.getSkuId().toString();
+//                attrValueWithSkuIdVo.setSkuIds(skuId);
+//                list.add(attrValueWithSkuIdVo);
+//                orDefault.setAttrValues(list);
+//            }
+//            resultMap.put(key, orDefault);
+//        }
+//        List<SkuItemSaleAttrsVo> collect = resultMap.values().stream().collect(Collectors.toList());
+//        return collect;
+//    }
 
 }
