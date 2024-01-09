@@ -5,6 +5,7 @@ import com.example.mall.product.entity.SkuImagesEntity;
 import com.example.mall.product.entity.SpuInfoDescEntity;
 import com.example.mall.product.entity.SpuInfoEntity;
 import com.example.mall.product.service.*;
+import com.example.mall.product.vo.skuItemvo.SkuItemSaleAttrsVo;
 import com.example.mall.product.vo.skuItemvo.SkuItemVo;
 import com.example.mall.product.vo.skuItemvo.SpuItemAttrGroupVo;
 import org.apache.commons.lang.StringUtils;
@@ -35,6 +36,8 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
     SpuInfoDescService spuInfoDescService;
     @Resource
     AttrGroupService attrGroupService;
+    @Resource
+    SkuSaleAttrValueService skuSaleAttrValueService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -127,13 +130,13 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
 
         skuItemVo.setImagesEntites(skuImagesEntity);
 //spu销售组合
-
+        List<SkuItemSaleAttrsVo> skuItemSaleAttrsVoList = skuSaleAttrValueService.getSaleAttrsBySpuId(spuId);
+        skuItemVo.setSaleAttr(skuItemSaleAttrsVoList);
 //        获取spu介绍
-
         SpuInfoDescEntity spuInfoDescEntity = spuInfoDescService.getById(spuId);
         skuItemVo.setDesp(spuInfoDescEntity);
 //        获取spu规格参数信息
-        List<SpuItemAttrGroupVo> SpuItemAttrGroupEntity = attrGroupService.getAttrGroupWithAttrBySpuId(spuId,catalogId);
+        List<SpuItemAttrGroupVo> SpuItemAttrGroupEntity = attrGroupService.getAttrGroupWithAttrBySpuId(spuId, catalogId);
         skuItemVo.setGroupAttrs(SpuItemAttrGroupEntity);
         return skuItemVo;
     }

@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 public class ItemController {
 
     @Autowired
-    private SkuInfoService skuInfoService;
+    SkuInfoService skuInfoService;
 
     @GetMapping("/{skuId}.html")
     public String skuItem(@PathVariable("skuId") Long skuId, Model model) throws ExecutionException {
