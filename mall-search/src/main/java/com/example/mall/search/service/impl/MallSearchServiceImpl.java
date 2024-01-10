@@ -283,8 +283,14 @@ public class MallSearchServiceImpl implements MallSearchService {
             catalogVo.setCatalogId(Long.parseLong(keyAsString));
             //得到分类名
             ParsedStringTerms catalog_name_agg = bucket.getAggregations().get("catalog_name_agg");
-            String catalog_name = catalog_name_agg.getBuckets().get(0).getKeyAsString();
-            catalogVo.setCatalogName(catalog_name);
+            if (catalog_name_agg != null) {
+                String catalog_name = catalog_name_agg.getBuckets().get(0).getKeyAsString();
+                if (StringUtils.isEmpty(catalog_name)) {
+                    catalogVo.setCatalogName(catalog_name);
+                }
+            }
+
+
             catalogVos.add(catalogVo);
         }
         result.setCatalogs(catalogVos);
@@ -340,7 +346,7 @@ public class MallSearchServiceImpl implements MallSearchService {
                 StringBuffer buffer = new StringBuffer();
                 String replace = "";
                 for (BrandVo brandVo : brands) {
-                    buffer.append(brandVo.getBrandName() + ";");
+                    buffer.append(brandVo.getName() + ";");
                     replace = replaceQueryString(paramVo, brandVo.getBrandId() + "", "brandId");
                 }
                 navVo.setNavValue(buffer.toString());

@@ -297,18 +297,13 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             skuEsModel.setAttrs(attrsList);
             return skuEsModel;
         }).collect(Collectors.toList());
-
         //send data to ES for saving  mall-search
         R r = searchFeignService.productStatusUp(uoProduct);
-
         if (r.getCode() == 0) {
 //            modify status
             this.upDataSpuStatus(skuIds, ProductConstant.StatusEnum.SPU_UP.getCode());
-
         } else {
 //           重复调用 接口幂等性 重试机制
-
-
         }
 
     }

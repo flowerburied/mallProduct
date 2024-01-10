@@ -42,7 +42,7 @@ public class SkuSaleAttrValueServiceImpl extends ServiceImpl<SkuSaleAttrValueDao
         return new PageUtils(page);
     }
 
-    //        SELECT
+//            SELECT
 //    ssav.attr_id,
 //    ssav.attr_name,
 //    ssav.attr_value,
