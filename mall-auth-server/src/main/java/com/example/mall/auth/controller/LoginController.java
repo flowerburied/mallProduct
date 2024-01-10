@@ -20,6 +20,7 @@ import org.thymeleaf.util.StringUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -75,7 +76,33 @@ public class LoginController {
             //校验出错转发到注册页
             return "redirect:http://auth.mall.com/reg.html";
         }
-        //真正注册调用远程服务注册
+
+//        校验验证码
+
+        String code = userRegisterVo.getCode();
+        String s = redisTemplate.opsForValue().get(AuthServerConstant.SMS_CODE_CACHE_PREFIX + userRegisterVo.getPhone());
+        if (!StringUtils.isEmpty(s)) {
+            String s1 = s.split("_")[0];
+            if (code.equals(s1)) {
+                //验证码通过
+                //删除验证码,令牌机制
+                redisTemplate.delete(AuthServerConstant.SMS_CODE_CACHE_PREFIX + userRegisterVo.getPhone());
+                //真正注册调用远程服务注册
+
+            } else {
+                Map<String, String> errors = new HashMap<>();
+                errors.put("code", "验证码错误");
+                redirectAttributes.addFlashAttribute("errors", errors);
+                //校验出错转发到注册页
+                return "redirect:http://auth.mall.com/reg.html";
+            }
+        } else {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("code", "验证码错误");
+            redirectAttributes.addFlashAttribute("errors", errors);
+            //校验出错转发到注册页
+            return "redirect:http://auth.mall.com/reg.html";
+        }
 
         return "redirect:/login.html";
 
