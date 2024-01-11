@@ -10,6 +10,7 @@ import com.example.mall.member.exception.UserNameExistException;
 import com.example.mall.member.feign.CouponFeignService;
 import com.example.mall.member.vo.MemberLoginVo;
 import com.example.mall.member.vo.MemberRegisterVo;
+import com.example.mall.member.vo.SocialUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +36,17 @@ public class MemberController {
     @Autowired
     CouponFeignService couponFeignService;
 
+    @PostMapping("/oauth2/login")
+    public R oauth2Login(@RequestBody SocialUser socialUser) {
+
+        MemberEntity memberEntity = memberService.login(socialUser);
+        if (memberEntity != null) {
+            return R.ok();
+        } else {
+            return R.error(BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getCode(), BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getMsg());
+        }
+
+    }
 
     @PostMapping("/login")
     public R login(@RequestBody MemberLoginVo memberLoginVo) {

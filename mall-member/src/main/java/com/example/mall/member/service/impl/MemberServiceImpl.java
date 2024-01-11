@@ -8,6 +8,7 @@ import com.example.mall.member.exception.UserNameExistException;
 import com.example.mall.member.service.MemberLevelService;
 import com.example.mall.member.vo.MemberLoginVo;
 import com.example.mall.member.vo.MemberRegisterVo;
+import com.example.mall.member.vo.SocialUser;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -109,6 +110,35 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         }
 
 
+    }
+
+    @Override
+    public MemberEntity login(SocialUser socialUser) {
+//登录和注册合并逻辑
+        Long uid = socialUser.getUid();
+//        判断是否注册过
+        LambdaQueryWrapper<MemberEntity> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(MemberEntity::getSocial_uid, uid);
+        MemberEntity memberEntity = baseMapper.selectOne(memberWrapper);
+
+        if (memberEntity != null) {
+            MemberEntity updata = new MemberEntity();
+            updata.setId(memberEntity.getId());
+            updata.setAccess_token(socialUser.getAccess_token());
+            updata.setExpires_in(socialUser.getExpires_in());
+            baseMapper.updateById(updata);
+
+            memberEntity.setAccess_token(socialUser.getAccess_token());
+            memberEntity.setExpires_in(socialUser.getExpires_in());
+            return memberEntity;
+        } else {
+            //用户没有注册
+            MemberEntity register = new MemberEntity();
+
+
+        }
+
+        return null;
     }
 
 }
