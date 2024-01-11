@@ -6,6 +6,7 @@ import com.example.mall.member.entity.MemberLevelEntity;
 import com.example.mall.member.exception.PhoneExistException;
 import com.example.mall.member.exception.UserNameExistException;
 import com.example.mall.member.service.MemberLevelService;
+import com.example.mall.member.vo.MemberLoginVo;
 import com.example.mall.member.vo.MemberRegisterVo;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -82,6 +83,32 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         if (integer > 0) {
             throw new UserNameExistException();
         }
+    }
+
+    @Override
+    public MemberEntity login(MemberLoginVo memberLoginVo) {
+        String loginacct = memberLoginVo.getLoginacct();
+        LambdaQueryWrapper<MemberEntity> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(MemberEntity::getMobile, loginacct).or().eq(MemberEntity::getUsername, loginacct);
+        MemberEntity memberEntity = baseMapper.selectOne(memberWrapper);
+        if (memberEntity == null) {
+//            登录失败
+            return null;
+        } else {
+//            获取数据库密码对比
+            String passwordDb = memberEntity.getPassword();
+            BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+            //密码匹配
+            boolean matches = bCryptPasswordEncoder.matches(memberLoginVo.getPassword(), passwordDb);
+            if (matches) {
+                return memberEntity;
+            } else {
+                return null;
+            }
+
+        }
+
+
     }
 
 }

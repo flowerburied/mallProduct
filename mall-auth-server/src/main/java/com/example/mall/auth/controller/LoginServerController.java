@@ -45,9 +45,20 @@ public class LoginServerController {
 
 
     @PostMapping("/login")
-    public String login(@RequestBody UserLoginVo userLoginVo) {
+    public String login(UserLoginVo userLoginVo, RedirectAttributes redirectAttributes) {
+        R login = memberFeignService.login(userLoginVo);
+        System.out.println("login======" + login);
+        if (login.getCode() == 0) {
+            return "redirect:http://mall.com";
+        } else {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("msg", login.getData("msg", new TypeReference<String>() {
+            }));
+            redirectAttributes.addFlashAttribute("errors", errors);
 
-        return "redirect:http://mall.com/reg.html";
+            return "redirect:http://auth.mall.com/login.html";
+        }
+
 
     }
 
@@ -113,9 +124,8 @@ public class LoginServerController {
 
                 } else {
                     Map<String, String> errors = new HashMap<>();
-                    errors.put("msg", register.getData(new TypeReference<String>() {
+                    errors.put("msg", register.getData("msg", new TypeReference<String>() {
                     }));
-
                     redirectAttributes.addFlashAttribute("errors", errors);
                     return "redirect:http://auth.mall.com/reg.html";
                 }
