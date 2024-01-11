@@ -23,6 +23,7 @@ public class Sample {
 
         String accessKeyId = credentialsProvider.getCredentials().getAccessKeyId();
         String secretAccessKey = credentialsProvider.getCredentials().getSecretAccessKey();
+        System.out.println("phone===" + phone + "-----" + code);
         System.out.println("accessKeyId===" + accessKeyId);
         System.out.println("secretAccessKey===" + secretAccessKey);
         // 请确保代码运行环境设置了环境变量 ALIBABA_CLOUD_ACCESS_KEY_ID 和 ALIBABA_CLOUD_ACCESS_KEY_SECRET。
@@ -30,6 +31,7 @@ public class Sample {
         Client client = Sample.createClient(accessKeyId, secretAccessKey);
 
         String getCode = "{\"code\":\"" + code + "\"}";
+        System.out.println("getCode===" + getCode);
         SendSmsRequest sendSmsRequest = new SendSmsRequest()
                 .setSignName("阿里云短信测试")
                 .setTemplateCode("SMS_154950909")
@@ -39,7 +41,7 @@ public class Sample {
         try {
             // 复制代码运行请自行打印 API 的返回值
             SendSmsResponse sendSmsResponse = client.sendSmsWithOptions(sendSmsRequest, runtime);
-            System.out.println("sendSmsResponse===" + sendSmsResponse.getBody());
+            System.out.println("sendSmsResponse===" + sendSmsResponse.getBody().getMessage());
         } catch (TeaException error) {
             // 错误 message
             System.out.println(error.getMessage());

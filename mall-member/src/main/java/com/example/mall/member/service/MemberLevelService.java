@@ -14,5 +14,8 @@ import java.util.Map;
 public interface MemberLevelService extends IService<MemberLevelEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    MemberLevelEntity getDefaultLevel();
+
 }
 

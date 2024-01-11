@@ -1,44 +1,60 @@
 package com.example.mall.auth.controller;
 
+import com.alibaba.fastjson.TypeReference;
 import com.example.common.constant.AuthServerConstant;
 import com.example.common.exception.BizCodeEnum;
 import com.example.common.utils.R;
+import com.example.mall.auth.feign.MemberFeignService;
 import com.example.mall.auth.feign.ThirdPartyFeignService;
+import com.example.mall.auth.vo.UserLoginVo;
 import com.example.mall.auth.vo.UserRegisterVo;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.util.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@ResponseBody
 @Controller
-public class LoginController {
+public class LoginServerController {
 
     @Resource
     ThirdPartyFeignService thirdPartyFeignService;
-    @Resource
-    StringRedisTemplate redisTemplate;
 
-    @ResponseBody
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    MemberFeignService memberFeignService;
+
+
+    @PostMapping("/login")
+    public String login(@RequestBody UserLoginVo userLoginVo) {
+
+        return "redirect:http://mall.com/reg.html";
+
+    }
+
+
     @GetMapping("/sms/sendCode")
     public R sendCode(@RequestParam("phone") String phone) {
-        String redisCode = redisTemplate.opsForValue().get(AuthServerConstant.SMS_CODE_CACHE_PREFIX + phone);
+        String redisCode = stringRedisTemplate.opsForValue().get(AuthServerConstant.SMS_CODE_CACHE_PREFIX + phone);
         if (!StringUtils.isEmpty(redisCode)) {
             long oldTime = Long.parseLong(redisCode.split("_")[1]);
             int setTime = 60 * 1000;
@@ -49,9 +65,11 @@ public class LoginController {
         }
 //        接口防刷
 //        验证码再次校验 存key-phone value-code  sms:code:15251xx -> 1235
-        String code = UUID.randomUUID().toString().substring(0, 5) + "_" + System.currentTimeMillis();
+//        String code = UUID.randomUUID().toString().substring(0, 5);
+        String code = String.valueOf(new Random().nextInt(100000));
+        String subString = code + "_" + System.currentTimeMillis();
 //        redis缓存验证码，防止同一个手机号在60秒内再次发送验证码
-        redisTemplate.opsForValue().set(AuthServerConstant.SMS_CODE_CACHE_PREFIX + phone, code, 5, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForValue().set(AuthServerConstant.SMS_CODE_CACHE_PREFIX + phone, subString, 5, TimeUnit.MINUTES);
         thirdPartyFeignService.sendCode(phone, code);
         return R.ok();
     }
@@ -80,14 +98,27 @@ public class LoginController {
 //        校验验证码
 
         String code = userRegisterVo.getCode();
-        String s = redisTemplate.opsForValue().get(AuthServerConstant.SMS_CODE_CACHE_PREFIX + userRegisterVo.getPhone());
+        String s = stringRedisTemplate.opsForValue().get(AuthServerConstant.SMS_CODE_CACHE_PREFIX + userRegisterVo.getPhone());
         if (!StringUtils.isEmpty(s)) {
             String s1 = s.split("_")[0];
             if (code.equals(s1)) {
                 //验证码通过
                 //删除验证码,令牌机制
-                redisTemplate.delete(AuthServerConstant.SMS_CODE_CACHE_PREFIX + userRegisterVo.getPhone());
+                stringRedisTemplate.delete(AuthServerConstant.SMS_CODE_CACHE_PREFIX + userRegisterVo.getPhone());
                 //真正注册调用远程服务注册
+                R register = memberFeignService.register(userRegisterVo);
+                if (register.getCode() == 0) {
+                    //成功
+                    return "redirect:http://auth.mall.com/login.html";
+
+                } else {
+                    Map<String, String> errors = new HashMap<>();
+                    errors.put("msg", register.getData(new TypeReference<String>() {
+                    }));
+
+                    redirectAttributes.addFlashAttribute("errors", errors);
+                    return "redirect:http://auth.mall.com/reg.html";
+                }
 
             } else {
                 Map<String, String> errors = new HashMap<>();
@@ -104,7 +135,6 @@ public class LoginController {
             return "redirect:http://auth.mall.com/reg.html";
         }
 
-        return "redirect:/login.html";
 
     }
 

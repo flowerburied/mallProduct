@@ -1,9 +1,14 @@
 package com.example.mall.member.controller;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.example.common.exception.BizCodeEnum;
+import com.example.mall.member.exception.PhoneExistException;
+import com.example.mall.member.exception.UserNameExistException;
 import com.example.mall.member.feign.CouponFeignService;
+import com.example.mall.member.vo.MemberRegisterVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +35,19 @@ public class MemberController {
     CouponFeignService couponFeignService;
 
 
+    @PostMapping("/register")
+    public R register(@RequestBody MemberRegisterVo memberRegisterVo) {
 
+        try {
+            memberService.register(memberRegisterVo);
+        } catch (PhoneExistException e) {
+            return R.error(BizCodeEnum.PHONE_EXIST_EXCEPTION.getCode(), BizCodeEnum.PHONE_EXIST_EXCEPTION.getMsg());
+        } catch (UserNameExistException e) {
+            return R.error(BizCodeEnum.USER_EXIST_EXCEPTION.getCode(), BizCodeEnum.USER_EXIST_EXCEPTION.getMsg());
+        }
+
+        return R.ok();
+    }
 
     @RequestMapping("/conpon")
     public R test() {

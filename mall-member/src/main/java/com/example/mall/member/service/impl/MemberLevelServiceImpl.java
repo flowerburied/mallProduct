@@ -1,5 +1,6 @@
 package com.example.mall.member.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -26,6 +27,16 @@ public class MemberLevelServiceImpl extends ServiceImpl<MemberLevelDao, MemberLe
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public MemberLevelEntity getDefaultLevel() {
+
+        LambdaQueryWrapper<MemberLevelEntity> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(MemberLevelEntity::getDefaultStatus, 1);
+        MemberLevelEntity memberLevelEntity = baseMapper.selectOne(memberWrapper);
+        return memberLevelEntity;
+
     }
 
 }

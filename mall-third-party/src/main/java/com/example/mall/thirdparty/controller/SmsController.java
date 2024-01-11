@@ -17,6 +17,7 @@ public class SmsController {
 
     @GetMapping("/smsSendCode")
     public R sendCode(@RequestParam("phone") String phone, @RequestParam("code") String code) throws Exception {
+
         sample.sendSmsCode(phone, code);
         return R.ok();
     }
