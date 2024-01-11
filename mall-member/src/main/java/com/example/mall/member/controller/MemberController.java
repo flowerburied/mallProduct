@@ -37,11 +37,11 @@ public class MemberController {
     CouponFeignService couponFeignService;
 
     @PostMapping("/oauth2/login")
-    public R oauth2Login(@RequestBody SocialUser socialUser) {
+    public R oauth2Login(@RequestBody SocialUser socialUser)throws Exception {
 
-        MemberEntity memberEntity = memberService.login(socialUser);
+        MemberEntity memberEntity = memberService.login(socialUser) ;
         if (memberEntity != null) {
-            return R.ok();
+            return R.ok().setData(memberEntity);
         } else {
             return R.error(BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getCode(), BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getMsg());
         }

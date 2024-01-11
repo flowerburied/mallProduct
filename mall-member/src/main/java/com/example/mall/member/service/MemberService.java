@@ -28,6 +28,6 @@ public interface MemberService extends IService<MemberEntity> {
 
     MemberEntity login(MemberLoginVo memberLoginVo);
 
-    MemberEntity login(SocialUser socialUser);
+    MemberEntity login(SocialUser socialUser) throws Exception;
 }
 

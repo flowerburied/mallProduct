@@ -2,8 +2,12 @@ package com.example.mall.auth.controller;
 
 import com.alibaba.fastjson.JSON;
 
+import com.alibaba.fastjson.TypeReference;
 import com.example.common.utils.HttpUtils;
+import com.example.common.utils.R;
+import com.example.mall.auth.feign.MemberFeignService;
 import com.example.mall.auth.vo.GitEEUser;
+import com.example.mall.auth.vo.MemberRespondVo;
 import com.example.mall.auth.vo.SocialUser;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
@@ -11,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +25,8 @@ import java.util.Map;
 @Controller
 public class OAuth2Controller {
 
+    @Resource
+    MemberFeignService memberFeignService;
 
     @GetMapping("/oauth2.0/gitee/success")
     public String gitEEOAth(@RequestParam("code") String code) throws Exception {
@@ -46,18 +53,25 @@ public class OAuth2Controller {
 //            知道当前是哪个社交用户
 //            如果是第一次,则自动注册
 
+            R oauth2Login = memberFeignService.oauth2Login(socialUser);
+            if (oauth2Login.getCode() == 0) {
+
+                MemberRespondVo data = oauth2Login.getData("data", new TypeReference<MemberRespondVo>() {
+                });
+                //登录成功就跳回首页
+                return "redirect:http://mall.com";
+            } else {
+                return "redirect:http://auth.mall.com/login.html";
+            }
         } else {
             return "redirect:http://auth.mall.com/login.html";
         }
-//
-//        //登录成功就跳回首页
-        return "redirect:http://mall.com";
+
     }
 
     private Long getOAuthId(String accessToken) throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put("access_token", accessToken);
-
 
         HttpResponse response = HttpUtils.doGet("https://gitee.com", "/api/v5/user", "get", new HashMap<>(), map);
         String json = EntityUtils.toString(response.getEntity());

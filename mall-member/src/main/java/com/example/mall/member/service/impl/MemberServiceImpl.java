@@ -1,6 +1,9 @@
 package com.example.mall.member.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.common.utils.HttpUtils;
 import com.example.mall.member.dao.MemberLevelDao;
 import com.example.mall.member.entity.MemberLevelEntity;
 import com.example.mall.member.exception.PhoneExistException;
@@ -9,9 +12,12 @@ import com.example.mall.member.service.MemberLevelService;
 import com.example.mall.member.vo.MemberLoginVo;
 import com.example.mall.member.vo.MemberRegisterVo;
 import com.example.mall.member.vo.SocialUser;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -113,7 +119,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
     }
 
     @Override
-    public MemberEntity login(SocialUser socialUser) {
+    public MemberEntity login(SocialUser socialUser) throws Exception {
 //登录和注册合并逻辑
         Long uid = socialUser.getUid();
 //        判断是否注册过
@@ -135,10 +141,31 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
             //用户没有注册
             MemberEntity register = new MemberEntity();
 
+            try {
+                Map<String, String> map = new HashMap<>();
+                map.put("access_token", socialUser.getAccess_token());
+                HttpResponse response = HttpUtils.doGet("https://gitee.com", "/api/v5/user", "get", new HashMap<>(), map);
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    String json = EntityUtils.toString(response.getEntity());
+                    JSONObject jsonObject = JSON.parseObject(json);
+                    String name = jsonObject.getString("name");
 
+                    register.setNickname(name);
+                    register.setGender(1);
+                }
+            } catch (Exception e) {
+
+            }
+
+
+            register.setSocial_uid(socialUser.getUid());
+            register.setAccess_token(socialUser.getAccess_token());
+            register.setExpires_in(socialUser.getExpires_in());
+            baseMapper.insert(register);
+
+            return register;
         }
 
-        return null;
     }
 
 }
