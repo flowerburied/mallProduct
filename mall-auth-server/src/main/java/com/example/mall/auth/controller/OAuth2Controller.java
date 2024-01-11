@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +32,7 @@ public class OAuth2Controller {
     MemberFeignService memberFeignService;
 
     @GetMapping("/oauth2.0/gitee/success")
-    public String gitEEOAth(@RequestParam("code") String code) throws Exception {
+    public String gitEEOAth(@RequestParam("code") String code, HttpSession session, HttpServletResponse httpServletResponse) throws Exception {
         //根据code换取access_token
         Map<String, String> map = new HashMap<>();
         map.put("code", code);
@@ -58,6 +61,10 @@ public class OAuth2Controller {
 
                 MemberRespondVo data = oauth2Login.getData("data", new TypeReference<MemberRespondVo>() {
                 });
+            //第一次使用session，命令游览器保存卡号，JSESSIONID这个cookie
+                //以后浏览器访问哪个网站就会带上这个网站的cookie
+                session.setAttribute("loginUser", data);
+//                httpServletResponse.addCookie(new Cookie());
                 //登录成功就跳回首页
                 return "redirect:http://mall.com";
             } else {
