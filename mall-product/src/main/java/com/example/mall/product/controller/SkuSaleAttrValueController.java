@@ -29,9 +29,10 @@ public class SkuSaleAttrValueController {
     @Autowired
     private SkuSaleAttrValueService skuSaleAttrValueService;
 
-
-//    @Resource
-//    SkuSaleAttrValueService skuSaleAttrValueService;
+    @GetMapping("/stringList/{skuId}")
+    public List<String> getSkuSaleAttrValues(@PathVariable("skuId") Long skuId) {
+        return skuSaleAttrValueService.getSkuSaleAttrValuesAsStringList(skuId);
+    }
 
     @GetMapping("/test/{spuId}")
     public R testVo(@PathVariable("spuId") Long spuId) {

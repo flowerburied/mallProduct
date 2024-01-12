@@ -42,7 +42,7 @@ public class SkuSaleAttrValueServiceImpl extends ServiceImpl<SkuSaleAttrValueDao
         return new PageUtils(page);
     }
 
-//            SELECT
+    //            SELECT
 //    ssav.attr_id,
 //    ssav.attr_name,
 //    ssav.attr_value,
@@ -92,6 +92,19 @@ public class SkuSaleAttrValueServiceImpl extends ServiceImpl<SkuSaleAttrValueDao
         });
 
         return new ArrayList<>(resultMap.values());
+    }
+
+    @Override
+    public List<String> getSkuSaleAttrValuesAsStringList(Long skuId) {
+
+        LambdaQueryWrapper<SkuSaleAttrValueEntity> skuSaleWrapper = new LambdaQueryWrapper<>();
+        skuSaleWrapper.eq(SkuSaleAttrValueEntity::getSkuId, skuId);
+
+        List<SkuSaleAttrValueEntity> skuSaleAttrValueEntities = baseMapper.selectList(skuSaleWrapper);
+        List<String> collect = skuSaleAttrValueEntities.stream().map(item -> item.getAttrName() + ": " + item.getAttrValue()).collect(Collectors.toList());
+
+        return collect;
+
     }
 
 //    @Override

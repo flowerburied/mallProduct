@@ -320,7 +320,7 @@ public class MallSearchServiceImpl implements MallSearchService {
                 R r = productFeignService.attrInfo(Long.parseLong(s[0]));
                 result.getAttrIds().add(Long.parseLong(s[0]));
                 if (r.getCode() == 0) {
-                    AttrResponseVo attrs = r.getData2("attr", new TypeReference<AttrResponseVo>() {
+                    AttrResponseVo attrs = r.getData("attr", new TypeReference<AttrResponseVo>() {
                     });
                     navVo.setNavName(attrs.getAttrName());
                 } else {
@@ -341,7 +341,7 @@ public class MallSearchServiceImpl implements MallSearchService {
             //远程查询所有品牌
             R r = productFeignService.infos(paramVo.getBrandId());
             if (r.getCode() == 0) {
-                List<BrandVo> brands = r.getData2("brands", new TypeReference<List<BrandVo>>() {
+                List<BrandVo> brands = r.getData("brands", new TypeReference<List<BrandVo>>() {
                 });
                 StringBuffer buffer = new StringBuffer();
                 String replace = "";
