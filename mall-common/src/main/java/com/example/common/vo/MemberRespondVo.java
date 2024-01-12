@@ -1,13 +1,14 @@
-package com.example.mall.auth.vo;
+package com.example.common.vo;
 
 import lombok.Data;
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @ToString
 @Data
-public class MemberRespondVo {
+public class MemberRespondVo implements Serializable {
     private Long id;
     /**
      *

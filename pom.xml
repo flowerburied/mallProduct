@@ -23,5 +23,9 @@
         <module>mall-third-party</module>
         <module>mall-search</module>
         <module>mall-auth-server</module>
+        <module>mall-test-oss-client</module>
+        <module>mall-test-sso-server</module>
+        <module>mall-test-oss-client2</module>
+        <module>mall-cart</module>
     </modules>
 </project>

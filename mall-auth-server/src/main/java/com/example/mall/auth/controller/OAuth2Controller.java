@@ -3,11 +3,12 @@ package com.example.mall.auth.controller;
 import com.alibaba.fastjson.JSON;
 
 import com.alibaba.fastjson.TypeReference;
+import com.example.common.constant.AuthServerConstant;
 import com.example.common.utils.HttpUtils;
 import com.example.common.utils.R;
 import com.example.mall.auth.feign.MemberFeignService;
 import com.example.mall.auth.vo.GitEEUser;
-import com.example.mall.auth.vo.MemberRespondVo;
+import com.example.common.vo.MemberRespondVo;
 import com.example.mall.auth.vo.SocialUser;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
@@ -61,9 +61,9 @@ public class OAuth2Controller {
 
                 MemberRespondVo data = oauth2Login.getData("data", new TypeReference<MemberRespondVo>() {
                 });
-            //第一次使用session，命令游览器保存卡号，JSESSIONID这个cookie
+                //第一次使用session，命令游览器保存卡号，JSESSIONID这个cookie
                 //以后浏览器访问哪个网站就会带上这个网站的cookie
-                session.setAttribute("loginUser", data);
+                session.setAttribute(AuthServerConstant.LOGIN_USER, data);
 //                httpServletResponse.addCookie(new Cookie());
                 //登录成功就跳回首页
                 return "redirect:http://mall.com";

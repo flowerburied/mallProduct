@@ -4,6 +4,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.example.common.constant.AuthServerConstant;
 import com.example.common.exception.BizCodeEnum;
 import com.example.common.utils.R;
+import com.example.common.vo.MemberRespondVo;
 import com.example.mall.auth.feign.MemberFeignService;
 import com.example.mall.auth.feign.ThirdPartyFeignService;
 import com.example.mall.auth.vo.UserLoginVo;
@@ -43,12 +44,25 @@ public class LoginServerController {
     @Resource
     MemberFeignService memberFeignService;
 
+    @GetMapping("/login.html")
+    public String loginPage(HttpSession session) {
+        Object attribute = session.getAttribute(AuthServerConstant.LOGIN_USER);
+        if (attribute == null) {
+            return "login";
+        } else {
+            return "redirect:http://mall.com";
+        }
+
+    }
 
     @PostMapping("/login")
-    public String login(UserLoginVo userLoginVo, RedirectAttributes redirectAttributes) {
+    public String login(UserLoginVo userLoginVo, RedirectAttributes redirectAttributes, HttpSession session) {
         R login = memberFeignService.login(userLoginVo);
         System.out.println("login======" + login);
         if (login.getCode() == 0) {
+            MemberRespondVo data = login.getData("data", new TypeReference<MemberRespondVo>() {
+            });
+            session.setAttribute(AuthServerConstant.LOGIN_USER, data);
             return "redirect:http://mall.com";
         } else {
             Map<String, String> errors = new HashMap<>();
