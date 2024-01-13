@@ -1,6 +1,7 @@
 package com.example.mall.cart.vo;
 
 
+import com.alibaba.nacos.client.naming.utils.CollectionUtils;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -64,19 +65,19 @@ public class Cart {
     }
 
 
-//    public BigDecimal getTotalAmount() {
-//        BigDecimal amount = new BigDecimal("0");
-//        // 计算购物项总价
-//        if (!CollectionUtils.isEmpty(items)) {
-//            for (CartItem cartItem : items) {
-//                if (cartItem.getCheck()) {
-//                    amount = amount.add(cartItem.getTotalPrice());
-//                }
-//            }
-//        }
-//        // 计算优惠后的价格
-//        return amount.subtract(getReduce());
-//    }
+    public BigDecimal getTotalAmount() {
+        BigDecimal amount = new BigDecimal("0");
+        // 计算购物项总价
+        if (!CollectionUtils.isEmpty(items)) {
+            for (CartItem cartItem : items) {
+                if (cartItem.getCheck()) {
+                    amount = amount.add(cartItem.getTotalPrice());
+                }
+            }
+        }
+        // 计算优惠后的价格
+        return amount.subtract(getReduce());
+    }
 
     public BigDecimal getReduce() {
         return reduce;

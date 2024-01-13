@@ -6,6 +6,7 @@ import com.example.mall.search.vo.SearchResult;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
@@ -19,9 +20,11 @@ public class SearchController {
 
     @GetMapping("/list.html")
     public String listPage(SearchParam searchParam, Model model, HttpServletRequest request) {
+//        System.out.println("searchParam===" + searchParam);
         String queryString = request.getQueryString();
         searchParam.set_queryString(queryString);
         SearchResult list = mallSearchService.search(searchParam);
+        System.out.println("list===" + list);
         model.addAttribute("result", list);
         return "list";
     }

@@ -143,7 +143,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
         CompletableFuture<Void> descFuture = infoFuture.thenAcceptAsync((res) -> {
             //        获取spu介绍
             SpuInfoDescEntity spuInfoDescEntity = spuInfoDescService.getById(res.getSpuId());
-            skuItemVo.setDesp(spuInfoDescEntity);
+            skuItemVo.setDesc(spuInfoDescEntity);
         }, threadPoolExecutor);
         CompletableFuture<Void> baseAttrFuture = infoFuture.thenAcceptAsync((res) -> {
             //        获取spu规格参数信息
@@ -155,7 +155,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
         CompletableFuture<Void> imagesFuture = CompletableFuture.runAsync(() -> {
             //        sku图片信息
             List<SkuImagesEntity> skuImagesEntity = skuImagesService.getImagesBySkuId(skuId);
-            skuItemVo.setImagesEntites(skuImagesEntity);
+            skuItemVo.setImages(skuImagesEntity);
         }, threadPoolExecutor);
 
         //等待所有任务都完成

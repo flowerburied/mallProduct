@@ -12,23 +12,24 @@ import java.util.List;
 
 @Data
 public class SkuItemVo {
-    //1.sku基本信息获取 pms_sku_info
-    SkuInfoEntity info;
+    //1、sku基本信息的获取  pms_sku_info
+    private SkuInfoEntity info;
 
-    boolean hasStock = true;
-    //2.sku图片信息 pms_sku_images
-    List<SkuImagesEntity> imagesEntites;
+    private boolean hasStock = true;
 
-    //3.spu的销售属性组合
-    List<SkuItemSaleAttrsVo> saleAttr;
+    //2、sku的图片信息    pms_sku_images
+    private List<SkuImagesEntity> images;
 
-    //4.spu的详细介绍
-    SpuInfoDescEntity desp;
+    //3、获取spu的销售属性组合
+    private List<SkuItemSaleAttrsVo> saleAttr;
 
-    //5.规格参数
-    List<SpuItemAttrGroupVo> groupAttrs;
+    //4、获取spu的介绍
+    private SpuInfoDescEntity desc;
 
-    //6.当前商品的秒杀优惠信息
-    SeckillInfoVo seckillInfo;
+    //5、获取spu的规格参数信息
+    private List<SpuItemAttrGroupVo> groupAttrs;
+
+    //6、秒杀商品的优惠信息
+    private SeckillInfoVo seckillSkuVo;
 
 }
