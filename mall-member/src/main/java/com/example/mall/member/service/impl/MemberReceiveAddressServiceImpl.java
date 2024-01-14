@@ -1,7 +1,9 @@
 package com.example.mall.member.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -26,6 +28,16 @@ public class MemberReceiveAddressServiceImpl extends ServiceImpl<MemberReceiveAd
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public List<MemberReceiveAddressEntity> getAddress(Long memberId) {
+        LambdaQueryWrapper<MemberReceiveAddressEntity> memberWrapper = new LambdaQueryWrapper<>();
+        memberWrapper.eq(MemberReceiveAddressEntity::getMemberId, memberId);
+
+        List<MemberReceiveAddressEntity> memberReceiveAddressEntities = baseMapper.selectList(memberWrapper);
+        return memberReceiveAddressEntities;
+
     }
 
 }

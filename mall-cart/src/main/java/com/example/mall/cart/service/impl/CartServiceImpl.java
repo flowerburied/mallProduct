@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -199,5 +200,27 @@ public class CartServiceImpl implements CartService {
         BoundHashOperations<String, Object, Object> cartOps = getCartOps();
 
         cartOps.delete(skuId.toString());
+    }
+
+    @Override
+    public List<CartItem> getUserCartItems() {
+        UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
+        if (userInfoTo != null) {
+            List<CartItem> cartItems = getCartItems(CART_PREFIX + userInfoTo.getUserKey());
+            //获取所有被选中的购物项
+            List<CartItem> collect = cartItems.stream().
+                    filter(item -> item.getCheck()).
+                    map(item -> {
+//                        更新最新价格
+                        BigDecimal price = productFeignService.getPrice(item.getSkuId());
+                        item.setPrice(price);
+                        return item;
+                    }).collect(Collectors.toList());
+            return collect;
+
+        } else {
+            return null;
+        }
+
     }
 }

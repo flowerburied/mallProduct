@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Controller
@@ -19,6 +20,13 @@ public class CartController {
 
     @Resource
     CartService cartService;
+
+
+    @GetMapping("/getCurrentCartItems")
+    public List<CartItem> getCurrentCartItem() {
+        List<CartItem> cartItems = cartService.getUserCartItems();
+        return cartItems;
+    }
 
     @GetMapping(value = "/deleteItem")
     public String deleteItem(@RequestParam("skuId") Integer skuId) {
@@ -28,7 +36,7 @@ public class CartController {
         return "redirect:http://cart.mall.com/cart.html";
 
     }
-    
+
     @GetMapping(value = "/countItem")
     public String countItem(@RequestParam(value = "skuId") Long skuId,
                             @RequestParam(value = "num") Integer num) {
