@@ -4,11 +4,28 @@ spring:
     password: 123456
     url: jdbc:mysql://192.168.18.128:3307/mall_oms?characterEncoding=UTF-8
     driver-class-name: com.mysql.jdbc.Driver
-
+  redis:
+    host: 192.168.18.128
+    port: 6380
+  session:
+    store-type: redis
+  thymeleaf:
+    cache: false
   rabbitmq:
     host: 192.168.18.128
     port: 5672
     virtual-host: /
+    #开启发送确认
+    publisher-confirm-type: simple
+    #开启发送端抵到队列确认
+    publisher-returns: true
+    #只要抵达队列，优先以异步模式回调returns_config
+    template:
+      mandatory: true
+      #手动ack消息
+    listener:
+      simple:
+        acknowledge-mode: manual
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml
   global-config:

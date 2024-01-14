@@ -1,5 +1,6 @@
 package com.example.mall.order.service.impl;
 
+import com.example.mall.order.vo.OrderConfirmVo;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -26,6 +27,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         );
 
         return new PageUtils(page);
+    }
+
+    /**
+     * 订单确认页返回需要的数据
+     *
+     * @return
+     */
+    @Override
+    public OrderConfirmVo confirmOrder() {
+
+        return null;
     }
 
 }

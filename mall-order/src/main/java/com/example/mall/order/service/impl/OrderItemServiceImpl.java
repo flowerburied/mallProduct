@@ -39,10 +39,11 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEnt
 //
 //    }
 //
-//    @RabbitHandler
-//    public void receiveMessage2(OrderEntity orderEntity) {
-//        System.out.println("接收到消息。。。内容。。。" + orderEntity);
-//
-//    }
+    @RabbitHandler
+    public void receiveMessage2(OrderEntity orderEntity) {
+        System.out.println("接收到消息。。。内容。。。" + orderEntity);
+
+
+    }
 
 }

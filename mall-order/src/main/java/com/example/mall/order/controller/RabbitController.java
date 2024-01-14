@@ -2,6 +2,7 @@ package com.example.mall.order.controller;
 
 import com.example.mall.order.entity.OrderEntity;
 import com.example.mall.order.entity.OrderReturnReasonEntity;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,12 +27,17 @@ public class RabbitController {
                 orderReturnReasonEntity.setId(1L);
                 orderReturnReasonEntity.setCreateTime(new Date());
                 orderReturnReasonEntity.setName("hh");
-                rabbitTemplate.convertAndSend("hello-java-exchange", "hello.java", orderReturnReasonEntity);
+                rabbitTemplate.convertAndSend("hello-java-exchange",
+                        "hello.java",
+                        orderReturnReasonEntity,
+                        new CorrelationData(UUID.randomUUID().toString()));
 
             } else {
                 OrderEntity orderEntity = new OrderEntity();
                 orderEntity.setOrderSn(UUID.randomUUID().toString());
-                rabbitTemplate.convertAndSend("hello-java-exchange", "hello.java", orderEntity);
+                rabbitTemplate.convertAndSend("hello-java-exchange",
+                        "hello.java",
+                        orderEntity);
 
             }
         }
