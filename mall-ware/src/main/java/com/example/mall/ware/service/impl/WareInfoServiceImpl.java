@@ -4,6 +4,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.common.utils.R;
 import com.example.mall.ware.feign.MemberFeignService;
+import com.example.mall.ware.vo.FareVo;
 import com.example.mall.ware.vo.MemberAddressVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
@@ -61,17 +62,22 @@ public class WareInfoServiceImpl extends ServiceImpl<WareInfoDao, WareInfoEntity
      * @return
      */
     @Override
-    public BigDecimal getFare(Long addrId) {
+    public FareVo getFare(Long addrId) {
 
+        FareVo fareVo = new FareVo();
         R info = memberFeignService.addrInfo(addrId);
         MemberAddressVo data = info.getData("memberReceiveAddress",new TypeReference<MemberAddressVo>() {
         });
+        fareVo.setAddressVo(data);
         if (data != null) {
             String phone = data.getPhone();
             String substring = phone.substring(phone.length() - 1, phone.length());
-            return new BigDecimal(substring);
+            fareVo.setFare(new BigDecimal(substring));
+
+            return fareVo;
         }
-        return new BigDecimal(0);
+        fareVo.setFare(new BigDecimal(0));
+        return fareVo;
 
     }
 

@@ -7,10 +7,11 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 
+
+@EnableDiscoveryClient
 @EnableFeignClients
 @EnableRedisHttpSession
 @EnableRabbit
-@EnableDiscoveryClient
 @SpringBootApplication
 public class MallOrderApplication {
 

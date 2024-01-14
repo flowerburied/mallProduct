@@ -204,24 +204,48 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public List<CartItem> getUserCartItems() {
-        UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
-        if (userInfoTo != null) {
-            List<CartItem> cartItems = getCartItems(CART_PREFIX + userInfoTo.getUserKey());
-            //获取所有被选中的购物项
-            List<CartItem> collect = cartItems.stream().
-                    filter(item -> item.getCheck()).
-                    map(item -> {
-//                        更新最新价格
-                        R price = productFeignService.getPrice(item.getSkuId());
-                        String data = (String) price.get("data");
-                        item.setPrice(new BigDecimal(data));
-                        return item;
-                    }).collect(Collectors.toList());
-            return collect;
+//        UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
 
+        UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
+        System.out.println("userInfoTo===" + userInfoTo);
+        String cartKey = "";
+        if (userInfoTo.getUserId() != null) {
+            cartKey = CART_PREFIX + userInfoTo.getUserId();
         } else {
-            return null;
+            cartKey = CART_PREFIX + userInfoTo.getUserKey();
         }
 
+        if (userInfoTo != null) {
+//            TODO  为什么userID等于2 为什么redis存的是mall:cart:2
+            List<CartItem> cartItems = getCartItems("mall:cart:2");
+            System.out.println("cartItems===" + cartItems);
+            if (cartItems != null) {
+
+
+                //获取所有被选中的购物项
+                List<CartItem> collect = cartItems.stream().
+                        filter(item -> item.getCheck()).
+                        map(item -> {
+//                        更新最新价格
+                            R price = productFeignService.getPrice(item.getSkuId());
+
+                            if (price.getCode() == 0) {
+                                String data = (String) price.get("data");
+                                item.setPrice(new BigDecimal(data));
+
+                            } else {
+                                // 商品查询不到价格? TODO
+                                item.setPrice(new BigDecimal("9999999"));
+                            }
+
+                            return item;
+                        }).collect(Collectors.toList());
+                return collect;
+
+            } else {
+                return null;
+            }
+        }
+        return null;
     }
 }

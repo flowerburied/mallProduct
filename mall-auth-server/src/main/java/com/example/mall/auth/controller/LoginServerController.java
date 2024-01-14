@@ -31,7 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@ResponseBody
+
 @Controller
 public class LoginServerController {
 

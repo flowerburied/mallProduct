@@ -61,6 +61,7 @@ public class OAuth2Controller {
 
                 MemberRespondVo data = oauth2Login.getData("data", new TypeReference<MemberRespondVo>() {
                 });
+                System.out.println("session===" + data);
                 //第一次使用session，命令游览器保存卡号，JSESSIONID这个cookie
                 //以后浏览器访问哪个网站就会带上这个网站的cookie
                 session.setAttribute(AuthServerConstant.LOGIN_USER, data);
