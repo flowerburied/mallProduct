@@ -212,8 +212,9 @@ public class CartServiceImpl implements CartService {
                     filter(item -> item.getCheck()).
                     map(item -> {
 //                        更新最新价格
-                        BigDecimal price = productFeignService.getPrice(item.getSkuId());
-                        item.setPrice(price);
+                        R price = productFeignService.getPrice(item.getSkuId());
+                        String data = (String) price.get("data");
+                        item.setPrice(new BigDecimal(data));
                         return item;
                     }).collect(Collectors.toList());
             return collect;
