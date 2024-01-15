@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.example.common.to.SkuHasStockVo;
+import com.example.mall.ware.vo.LockStockResult;
+import com.example.mall.ware.vo.WareSkuLockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,14 @@ public class WareSkuController {
     @Autowired
     private WareSkuService wareSkuService;
 
+
+    @PostMapping("/lock/order")
+    public R orderLockStock(@RequestBody WareSkuLockVo wareSkuLockVo) {
+
+        List<LockStockResult> lockStockResults = wareSkuService.orderLockStock(wareSkuLockVo);
+
+        return R.ok().setData(lockStockResults);
+    }
 
     @PostMapping("/hasStock")
     public R getSkuHasStock(@RequestBody List<Long> skuIds) {

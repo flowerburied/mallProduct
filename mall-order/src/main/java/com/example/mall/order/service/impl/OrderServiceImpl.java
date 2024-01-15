@@ -164,6 +164,23 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 //                保存订单
                 saveOrder(order);
 //                库存锁定,只要有异常回滚订单数据
+                WareSkuLockVo wareSkuLockVo = new WareSkuLockVo();
+                wareSkuLockVo.setOrderSn(order.getOrder().getOrderSn());
+                List<OrderItemVo> locks = order.getItems().stream().map(item -> {
+                    OrderItemVo orderItemVo = new OrderItemVo();
+                    orderItemVo.setSkuId(item.getSkuId());
+                    orderItemVo.setCount(item.getSkuQuantity());
+                    orderItemVo.setTitle(item.getSkuName());
+                    return orderItemVo;
+                }).collect(Collectors.toList());
+                wareSkuLockVo.setLocks(locks);
+
+                R r = wmsFeignService.orderLockStock(wareSkuLockVo);
+                if (r.getCode()==0){
+                //锁成功
+                }else {
+                    //锁失败
+                }
 
             } else {
                 submitVo.setCode(2);
