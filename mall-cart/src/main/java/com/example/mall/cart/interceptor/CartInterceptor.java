@@ -31,14 +31,14 @@ public class CartInterceptor implements HandlerInterceptor {
 
         HttpSession session = request.getSession();
         MemberRespondVo memberRespondVo = (MemberRespondVo) session.getAttribute(AuthServerConstant.LOGIN_USER);
-
+//        System.out.println("session===" + session);
         if (memberRespondVo != null) {
             //用户登录了
             userInfoTo.setUserId(memberRespondVo.getId());
 
-        } else {
-
         }
+
+//        System.out.println("userInfoTo===" + userInfoTo);
         Cookie[] cookies = request.getCookies();
         if (cookies != null && cookies.length > 0) {
             for (Cookie cookie : cookies) {

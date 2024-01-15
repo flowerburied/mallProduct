@@ -208,16 +208,11 @@ public class CartServiceImpl implements CartService {
 
         UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
         System.out.println("userInfoTo===" + userInfoTo);
-        String cartKey = "";
-        if (userInfoTo.getUserId() != null) {
-            cartKey = CART_PREFIX + userInfoTo.getUserId();
-        } else {
-            cartKey = CART_PREFIX + userInfoTo.getUserKey();
-        }
+
 
         if (userInfoTo != null) {
-//            TODO  为什么userID等于2 为什么redis存的是mall:cart:2
-            List<CartItem> cartItems = getCartItems("mall:cart:2");
+//           为什么userID等于2 为什么redis存的是mall:cart:2    因为feignconfig加错地方了，要在发送端配置上才行
+            List<CartItem> cartItems = getCartItems(CART_PREFIX + userInfoTo.getUserKey());
             System.out.println("cartItems===" + cartItems);
             if (cartItems != null) {
 
