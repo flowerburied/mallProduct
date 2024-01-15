@@ -32,5 +32,7 @@ public interface SpuInfoService extends IService<SpuInfoEntity> {
     void spuUp(Long spuId);
 
     void upDataSpuStatus(List<Long> skuIds, int code);
+
+    SpuInfoEntity getSpuInfoBuSkuId(Long skuId);
 }
 

@@ -339,6 +339,16 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         this.updateBatchById(spuInfoEntities);
     }
 
+    @Override
+    public SpuInfoEntity getSpuInfoBuSkuId(Long skuId) {
+        SkuInfoEntity byId = skuInfoService.getById(skuId);
+        Long spuId = byId.getSpuId();
+        SpuInfoEntity spuInfoEntity = this.getById(skuId);
+
+        return spuInfoEntity;
+
+    }
+
 
     private String getString(Map<String, Object> params, String key) {
         return (String) params.get(key);
