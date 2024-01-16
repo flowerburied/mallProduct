@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.example.common.constant.OrderConstant;
+import com.example.common.exception.NoStockException;
 import com.example.common.utils.R;
 import com.example.common.vo.MemberRespondVo;
 import com.example.mall.order.dao.OrderItemDao;
@@ -142,6 +143,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         SubmitOrderResponseVo submitVo = new SubmitOrderResponseVo();
         MemberRespondVo memberRespondVo = LoginUserInterceptor.loginUser.get();
 
+        submitVo.setCode(0);
         //创建订单 验令牌  验价格  锁库存
         String orderToken = orderSubmitVo.getOrderToken();
         // 查-比-删，全部成功返回1，这里是有并发问题的，必须要原子操作
@@ -175,11 +177,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 }).collect(Collectors.toList());
                 wareSkuLockVo.setLocks(locks);
 
+                //远程锁库存
                 R r = wmsFeignService.orderLockStock(wareSkuLockVo);
-                if (r.getCode()==0){
-                //锁成功
-                }else {
+                if (r.getCode() == 0) {
+                    //锁成功
+                    submitVo.setOrder(order.getOrder());
+                    return submitVo;
+                } else {
+                    throw new NoStockException(0L);
                     //锁失败
+//                    submitVo.setCode(3);
+//                    return submitVo;
                 }
 
             } else {
@@ -195,7 +203,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 //        }else {
 //            return submitVo;
 //        }
-        return submitVo;
+
 
     }
 
@@ -218,13 +226,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         //创建订单号
         String orderSn = IdWorker.getTimeId();
         OrderEntity orderEntity = buildOrder(orderSn);
-
-
         //获取到所有的订单项
         List<OrderItemEntity> itemEntities = buildOrderItems(orderSn);
-
 //        验价
         computerPrice(orderEntity, itemEntities);
+        orderCreateTo.setOrder(orderEntity);
+        orderCreateTo.setItems(itemEntities);
 
         return orderCreateTo;
     }

@@ -4,8 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.example.common.exception.BizCodeEnum;
 import com.example.common.to.SkuHasStockVo;
-import com.example.mall.ware.vo.LockStockResult;
+import com.example.common.exception.NoStockException;
 import com.example.mall.ware.vo.WareSkuLockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -30,12 +31,23 @@ public class WareSkuController {
     private WareSkuService wareSkuService;
 
 
+    @GetMapping("/sql")
+    public R testSql(@RequestParam("skuId") Long skuId, @RequestParam("wareId") Long wareId, @RequestParam("num") Integer num) {
+        Long aLong = wareSkuService.lockSkuStock(skuId, wareId, num);
+        return R.ok().setData(aLong);
+    }
+
     @PostMapping("/lock/order")
     public R orderLockStock(@RequestBody WareSkuLockVo wareSkuLockVo) {
 
-        List<LockStockResult> lockStockResults = wareSkuService.orderLockStock(wareSkuLockVo);
+        try {
+            Boolean lockStockResults = wareSkuService.orderLockStock(wareSkuLockVo);
+            return R.ok();
+        } catch (NoStockException err) {
+            return R.error(BizCodeEnum.NO_STOCK_EXCEPTION.getCode(), BizCodeEnum.NO_STOCK_EXCEPTION.getMsg());
+        }
 
-        return R.ok().setData(lockStockResults);
+
     }
 
     @PostMapping("/hasStock")

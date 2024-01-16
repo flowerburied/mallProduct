@@ -2,10 +2,12 @@ package com.example.mall.ware.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.common.utils.R;
+import com.example.common.exception.NoStockException;
 import com.example.mall.ware.feign.ProductFeignService;
 import com.example.common.to.SkuHasStockVo;
-import com.example.mall.ware.vo.LockStockResult;
+import com.example.mall.ware.vo.OrderItemVo;
 import com.example.mall.ware.vo.WareSkuLockVo;
+import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -148,12 +150,95 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         return collect;
     }
 
-    //为某个订单锁定库存
+    //为某个订单锁定库存  (rollbackFor =NoStockException.class )
+    @Transactional
     @Override
-    public List<LockStockResult> orderLockStock(WareSkuLockVo wareSkuLockVo) {
+    public Boolean orderLockStock(WareSkuLockVo wareSkuLockVo) {
+
+        List<OrderItemVo> locks = wareSkuLockVo.getLocks();
+
+        List<SkuWareHasStock> collect = locks.stream().map(item -> {
+            SkuWareHasStock skuWareHasStock = new SkuWareHasStock();
+            Long skuId = item.getSkuId();
+            skuWareHasStock.setSkuId(skuId);
+            skuWareHasStock.setNum(item.getCount());
+            //查询这个商品在哪里有库存
+            List<Long> wareId = this.listWareIdHasSkuStock(skuId);
+
+            return skuWareHasStock;
+        }).collect(Collectors.toList());
 
 
-        return null;
+        for (SkuWareHasStock skuWareHasStock : collect) {
+            Boolean skuStock = false;
+            Long skuId = skuWareHasStock.getSkuId();
+            List<Long> wareIds = skuWareHasStock.getWareId();
+            if (wareIds == null || wareIds.size() == 0) {
+                //没有仓库库存
+                throw new NoStockException(skuId);
+            }
+            for (Long wareId : wareIds) {
+                Long count = this.lockSkuStock(skuId, wareId, skuWareHasStock.getNum());
+//                成功1 失败0
+                if (count == 1) {
+                    skuStock = true;
+                    break;
+                }
+            }
+            if (!skuStock) {
+//                当前仓库都没锁住
+                //没有仓库库存
+                throw new NoStockException(skuId);
+
+            }
+
+        }
+
+        return true;
+    }
+
+    @Override
+    public List<Long> listWareIdHasSkuStock(Long skuId) {
+        LambdaQueryWrapper<WareSkuEntity> wareWrapper = new LambdaQueryWrapper<>();
+        wareWrapper.eq(WareSkuEntity::getSkuId, skuId);
+        List<WareSkuEntity> wareSkuEntityList = baseMapper.selectList(wareWrapper);
+
+        List<Long> collect = wareSkuEntityList.stream().
+                filter(item -> item.getStock() - item.getStockLocked() > 0).
+                map(WareSkuEntity::getWareId).
+                collect(Collectors.toList());
+
+        return collect;
+
+    }
+
+    @Override
+    public Long lockSkuStock(Long skuId, Long wareId, Integer num) {
+        LambdaQueryWrapper<WareSkuEntity> wareQueryWrapper = new LambdaQueryWrapper<>();
+        wareQueryWrapper.eq(WareSkuEntity::getSkuId, skuId).eq(WareSkuEntity::getWareId, wareId);
+
+        List<WareSkuEntity> wareSkuEntityList = baseMapper.selectList(wareQueryWrapper);
+
+        List<WareSkuEntity> collect = wareSkuEntityList.stream().
+                filter(item -> item.getStock() - item.getStockLocked() >= num)
+                .peek(item -> item.setStockLocked(item.getStockLocked() + num))
+                .collect(Collectors.toList());
+        System.out.println("collect=====" + collect);
+        if (collect.isEmpty()) {
+            // 处理空列表的情况，例如抛出异常或返回特定的值
+            return 0L;
+        }
+        boolean b = this.updateBatchById(collect);
+
+
+        return b ? 1L : 0L;
+    }
+
+    @Data
+    class SkuWareHasStock {
+        private Long skuId;
+        private Integer num;
+        private List<Long> wareId;
     }
 
 
