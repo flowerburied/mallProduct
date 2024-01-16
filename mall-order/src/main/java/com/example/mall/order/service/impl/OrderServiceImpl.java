@@ -184,6 +184,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     submitVo.setOrder(order.getOrder());
                     return submitVo;
                 } else {
+                    submitVo.setCode(3);
                     throw new NoStockException(0L);
                     //锁失败
 //                    submitVo.setCode(3);
