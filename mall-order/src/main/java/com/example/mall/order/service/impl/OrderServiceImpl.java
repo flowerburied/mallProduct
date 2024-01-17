@@ -18,6 +18,7 @@ import com.example.mall.order.interceptor.LoginUserInterceptor;
 import com.example.mall.order.service.OrderItemService;
 import com.example.mall.order.to.OrderCreateTo;
 import com.example.mall.order.vo.*;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -136,6 +137,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return confirmVo;
     }
 
+    @GlobalTransactional
     @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo orderSubmitVo) {

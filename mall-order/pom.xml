@@ -93,6 +93,13 @@
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
+        <!-- Seata -->
+        <dependency>
+            <groupId>io.seata</groupId>
+            <artifactId>seata-all</artifactId>
+            <version>1.7.1</version>
+        </dependency>
+
 
     </dependencies>
     <dependencyManagement>
