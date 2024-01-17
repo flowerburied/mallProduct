@@ -142,6 +142,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo orderSubmitVo) {
+        System.out.println("orderSubmitVo===" + orderSubmitVo);
         confirmVoThreadLocal.set(orderSubmitVo);
         SubmitOrderResponseVo submitVo = new SubmitOrderResponseVo();
         MemberRespondVo memberRespondVo = LoginUserInterceptor.loginUser.get();
