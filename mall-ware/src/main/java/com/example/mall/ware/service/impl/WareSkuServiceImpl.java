@@ -1,14 +1,22 @@
 package com.example.mall.ware.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.common.to.mq.StockDetailTo;
+import com.example.common.to.mq.StockLockedTo;
 import com.example.common.utils.R;
 import com.example.common.exception.NoStockException;
+import com.example.mall.ware.entity.WareOrderTaskDetailEntity;
+import com.example.mall.ware.entity.WareOrderTaskEntity;
 import com.example.mall.ware.feign.ProductFeignService;
 import com.example.common.to.SkuHasStockVo;
+import com.example.mall.ware.service.WareOrderTaskDetailService;
+import com.example.mall.ware.service.WareOrderTaskService;
 import com.example.mall.ware.vo.OrderItemVo;
 import com.example.mall.ware.vo.WareSkuLockVo;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -33,7 +41,15 @@ import javax.annotation.Resource;
 public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> implements WareSkuService {
 
     @Resource
+    RabbitTemplate rabbitTemplate;
+    @Resource
     ProductFeignService productFeignService;
+
+    @Resource
+    WareOrderTaskDetailService wareOrderTaskDetailService;
+    @Resource
+    WareOrderTaskService wareOrderTaskService;
+
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -155,6 +171,16 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
     @Override
     public Boolean orderLockStock(WareSkuLockVo wareSkuLockVo) {
 
+        /**
+         * 保存库存工作单的详情
+         * 追溯
+         * 回滚
+         */
+        WareOrderTaskEntity taskEntity = new WareOrderTaskEntity();
+        taskEntity.setOrderSn(wareSkuLockVo.getOrderSn());
+        wareOrderTaskService.save(taskEntity);
+
+
         List<OrderItemVo> locks = wareSkuLockVo.getLocks();
 
         List<SkuWareHasStock> collect = locks.stream().map(item -> {
@@ -164,7 +190,7 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             skuWareHasStock.setNum(item.getCount());
             //查询这个商品在哪里有库存
             List<Long> wareId = this.listWareIdHasSkuStock(skuId);
-
+            skuWareHasStock.setWareId(wareId);
             return skuWareHasStock;
         }).collect(Collectors.toList());
 
@@ -181,6 +207,21 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 Long count = this.lockSkuStock(skuId, wareId, skuWareHasStock.getNum());
 //                成功1 失败0
                 if (count == 1) {
+/**
+ * 通告锁已成功
+ */
+                    WareOrderTaskDetailEntity wareDetailEntity = new WareOrderTaskDetailEntity(null, skuId, "", skuWareHasStock.getNum(), taskEntity.getId(), wareId, 1);
+                    wareOrderTaskDetailService.save(wareDetailEntity);
+                    StockLockedTo stockLockedTo = new StockLockedTo();
+                    stockLockedTo.setId(taskEntity.getId());
+                    StockDetailTo stockDetailTo = new StockDetailTo();
+                    BeanUtils.copyProperties(wareDetailEntity, stockDetailTo);
+                    //防止回滚后找不到数据
+                    stockLockedTo.setDetail(stockDetailTo);
+
+                    rabbitTemplate.convertAndSend("stock-event-exchange", "stock.locked", stockLockedTo);
+
+//                    rabbitTemplate
                     skuStock = true;
                     break;
                 }

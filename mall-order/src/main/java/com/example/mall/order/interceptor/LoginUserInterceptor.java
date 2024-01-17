@@ -8,6 +8,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @Component
 public class LoginUserInterceptor implements HandlerInterceptor {
@@ -18,7 +19,9 @@ public class LoginUserInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        MemberRespondVo attribute = (MemberRespondVo) request.getSession().getAttribute(AuthServerConstant.LOGIN_USER);
+        HttpSession session = request.getSession();
+        MemberRespondVo attribute = (MemberRespondVo) session.getAttribute(AuthServerConstant.LOGIN_USER);
+        System.out.println("session===" + session);
         if (attribute != null) {
             loginUser.set(attribute);
             return true;

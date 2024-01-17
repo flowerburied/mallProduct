@@ -116,7 +116,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             List<SkuStockVo> data = skuHasStock.getData(new TypeReference<List<SkuStockVo>>() {
             });
             if (data != null) {
-                Map<Long, Boolean> map = data.stream().collect(Collectors.toMap(SkuStockVo::getSkuId, SkuStockVo::getHasStock));
+                Map<Long, Boolean> map = data.stream().collect(Collectors.toMap(SkuStockVo::getSkuId, SkuStockVo::getStock));
                 confirmVo.setStocks(map);
 
             }
@@ -133,11 +133,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
         stringRedisTemplate.opsForValue().set(OrderConstant.USER_ORDER_TOKEN_PREFIX + memberRespondVo.getId(), token, 30, TimeUnit.MINUTES);
         CompletableFuture.allOf(addressThread, cartThread).get();
+        System.out.println("confirmVo===" + confirmVo);
 
         return confirmVo;
     }
 
-    @GlobalTransactional
+    //    @GlobalTransactional
     @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo orderSubmitVo) {
@@ -184,6 +185,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 if (r.getCode() == 0) {
                     //锁成功
                     submitVo.setOrder(order.getOrder());
+
+                    //调试出错
+                    int i = 10 / 0;  //回滚测试
+
                     return submitVo;
                 } else {
                     submitVo.setCode(3);
@@ -283,6 +288,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderEntity.setOrderSn(orderSn);
         //获取收货地址信息
         OrderSubmitVo orderSubmitVo = confirmVoThreadLocal.get();
+        System.out.println("orderSubmitVo===" + orderSubmitVo);
         R fare = wmsFeignService.getFare(orderSubmitVo.getAddrId());
         FareVo data = fare.getData(new TypeReference<FareVo>() {
         });

@@ -7,6 +7,7 @@ import com.example.mall.ware.feign.MemberFeignService;
 import com.example.mall.ware.vo.FareVo;
 import com.example.mall.ware.vo.MemberAddressVo;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,6 +28,7 @@ import javax.annotation.Resource;
 
 @Service("wareInfoService")
 public class WareInfoServiceImpl extends ServiceImpl<WareInfoDao, WareInfoEntity> implements WareInfoService {
+
 
 
     @Resource
@@ -66,7 +68,7 @@ public class WareInfoServiceImpl extends ServiceImpl<WareInfoDao, WareInfoEntity
 
         FareVo fareVo = new FareVo();
         R info = memberFeignService.addrInfo(addrId);
-        MemberAddressVo data = info.getData("memberReceiveAddress",new TypeReference<MemberAddressVo>() {
+        MemberAddressVo data = info.getData("memberReceiveAddress", new TypeReference<MemberAddressVo>() {
         });
         fareVo.setAddressVo(data);
         if (data != null) {

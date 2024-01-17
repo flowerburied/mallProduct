@@ -19,6 +19,11 @@ public class MyMQConfig {
 
 
     @RabbitListener(queues = "order.release.order.queue")
+    public void handleRabbitListener(Message message) {
+
+    }
+
+    @RabbitListener(queues = "order.release.order.queue")
     public void listener(OrderEntity orderEntity, Channel channel, Message message) throws IOException {
 
         System.out.println("收到过期的订单信息，准备关闭订单" + orderEntity.getOrderSn());

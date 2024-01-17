@@ -1,6 +1,7 @@
 package com.example.mall.order.config;
 
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -21,6 +22,7 @@ public class MyRabbitConfig {
         Jackson2JsonMessageConverter jackson2JsonMessageConverter = new Jackson2JsonMessageConverter();
         return jackson2JsonMessageConverter;
     }
+
 
     /**
      * 服务器收到消息就回调
