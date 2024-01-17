@@ -12,7 +12,12 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
   application:
     name: mall-ware
-
+  rabbitmq:
+    host: 192.168.18.128
+    port: 5672
+    username: admin
+    password: admin
+    virtual-host: /
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml
   global-config:

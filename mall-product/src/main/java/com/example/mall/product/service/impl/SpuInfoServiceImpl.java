@@ -20,6 +20,7 @@ import com.example.mall.product.feign.WareFeignService;
 import com.example.mall.product.service.*;
 import com.example.mall.product.vo.spusavevo.*;
 import com.sun.xml.internal.bind.v2.TODO;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -80,6 +81,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         return new PageUtils(page);
     }
 
+//    @GlobalTransactional
     @Transactional
     @Override
     public void saveSpuInfo(SpuSaveVo spuInfoVo) {

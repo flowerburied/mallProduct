@@ -1,16 +1,20 @@
 package com.example.mall.order.web;
 
+import com.example.mall.order.entity.OrderEntity;
 import com.example.mall.order.service.OrderService;
 import com.example.mall.order.vo.OrderConfirmVo;
 import com.example.mall.order.vo.OrderSubmitVo;
 import com.example.mall.order.vo.SubmitOrderResponseVo;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 @Controller
@@ -18,6 +22,23 @@ public class OrderWebController {
 
     @Resource
     OrderService orderService;
+    @Resource
+    RabbitTemplate rabbitTemplate;
+
+
+    @ResponseBody
+    @GetMapping("/test/createOrder")
+    public String createOrderTest() {
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setOrderSn("111111");
+        orderEntity.setModifyTime(new Date());
+        rabbitTemplate.convertAndSend("order-event-exchange",
+                "order-create-order",
+                orderEntity);
+
+        return "ok";
+    }
+
 
     @GetMapping("/toTrade")
     public String toTrade(Model model) throws ExecutionException, InterruptedException {

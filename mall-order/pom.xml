@@ -47,7 +47,7 @@
             <scope>test</scope>
         </dependency>
 
-<!--        导入amqp-->
+<!--        导入amqp  rabbitmq支持-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
@@ -93,12 +93,7 @@
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
-        <!-- Seata -->
-        <dependency>
-            <groupId>io.seata</groupId>
-            <artifactId>seata-all</artifactId>
-            <version>1.7.1</version>
-        </dependency>
+
 
 
     </dependencies>
