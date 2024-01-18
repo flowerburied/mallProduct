@@ -8,6 +8,10 @@ spring:
     nacos:
       discovery:
         server-addr: 192.168.18.128:8848
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+  application:
+    name: mall-order
   redis:
     host: 192.168.18.128
     port: 6380
@@ -22,12 +26,12 @@ spring:
     password: admin
     virtual-host: /
     #开启发送确认
-    publisher-confirm-type: simple
-    #开启发送端抵到队列确认
-    publisher-returns: true
-    #只要抵达队列，优先以异步模式回调returns_config
-    template:
-      mandatory: true
+#    publisher-confirm-type: simple
+#    #开启发送端抵到队列确认
+#    publisher-returns: true
+#    #只要抵达队列，优先以异步模式回调returns_config
+#    template:
+#      mandatory: true
       #手动ack消息
 #    listener:
 #      simple:

@@ -1,24 +1,35 @@
 package com.example.mall.ware.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.common.to.mq.StockDetailTo;
 import com.example.common.to.mq.StockLockedTo;
 import com.example.common.utils.R;
 import com.example.common.exception.NoStockException;
 import com.example.mall.ware.entity.WareOrderTaskDetailEntity;
 import com.example.mall.ware.entity.WareOrderTaskEntity;
+import com.example.mall.ware.feign.OrderFeignService;
 import com.example.mall.ware.feign.ProductFeignService;
 import com.example.common.to.SkuHasStockVo;
 import com.example.mall.ware.service.WareOrderTaskDetailService;
 import com.example.mall.ware.service.WareOrderTaskService;
 import com.example.mall.ware.vo.OrderItemVo;
+import com.example.mall.ware.vo.OrderVo;
 import com.example.mall.ware.vo.WareSkuLockVo;
+import com.rabbitmq.client.Channel;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +60,8 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
     WareOrderTaskDetailService wareOrderTaskDetailService;
     @Resource
     WareOrderTaskService wareOrderTaskService;
+    @Resource
+    OrderFeignService orderFeignService;
 
 
     @Override
@@ -219,7 +232,7 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                     //防止回滚后找不到数据
                     stockLockedTo.setDetail(stockDetailTo);
 
-                    rabbitTemplate.convertAndSend("stock-event-exchange", "stock.locked", stockLockedTo);
+                    rabbitTemplate.convertAndSend("stock-event-exchange", "stock.lock.stock", stockLockedTo);
 
 //                    rabbitTemplate
                     skuStock = true;
@@ -273,6 +286,61 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
 
 
         return b ? 1L : 0L;
+    }
+
+    @Override
+    public void unlockStock(StockLockedTo stockLockedTo) {
+
+        StockDetailTo detail = stockLockedTo.getDetail();
+        Long detailId = detail.getId();
+        //解锁
+        WareOrderTaskDetailEntity byId = wareOrderTaskDetailService.getById(detailId);
+        if (byId != null) {
+            //解锁操作
+            Long id = stockLockedTo.getId();  //库存工作单的ID
+            WareOrderTaskEntity taskEntity = wareOrderTaskService.getById(id);
+            String orderSn = taskEntity.getOrderSn();//根据订单号查询订单的状态
+            R res = orderFeignService.getOrderStatus(orderSn);
+            if (res.getCode() == 0) {
+                OrderVo data = res.getData(new TypeReference<OrderVo>() {
+                });
+                System.out.println("data===" + data);
+                if (data == null || data.getStatus() == 4) {
+                    //订单不存在
+                    //订单被取消
+                    if (byId.getLockStatus() == 1) {
+                        //只有当前工作单状态为已锁定但是为解锁才可以解锁
+                        this.unlockStockTrue(detail.getSkuId(), detail.getWareId(), detail.getSkuNum(), detailId);
+                    }
+                }
+            } else {
+                throw new RuntimeException("远程服务调用失败");
+            }
+        }
+    }
+
+    @Override
+    public void unlockStockTrue(Long skuId, Long wareId, Integer num, Long taskDetailId) {
+//        wareSkuDao.unlockStock(skuId, wareId, num);
+//        LambdaQueryWrapper<WareSkuEntity> wareWrapper = new LambdaQueryWrapper<>();
+//        wareWrapper.eq(WareSkuEntity::getSkuId, skuId).eq(WareSkuEntity::getWareId, wareId);
+//        WareSkuEntity wareSkuEntity = baseMapper.selectOne(wareWrapper);
+//        wareSkuEntity.setStockLocked(wareSkuEntity.getStockLocked() - num);
+//        System.out.println("wareSkuEntity==" + wareSkuEntity);
+//        baseMapper.updateById(wareSkuEntity);
+
+        LambdaUpdateWrapper<WareSkuEntity> wareSkuWrapper = new LambdaUpdateWrapper<>();
+        wareSkuWrapper
+                .eq(WareSkuEntity::getSkuId, skuId)
+                .eq(WareSkuEntity::getWareId, wareId)
+                .setSql("stock_locked = stock_locked - " + num);
+        baseMapper.update(null, wareSkuWrapper);
+
+
+        WareOrderTaskDetailEntity e = new WareOrderTaskDetailEntity();
+        e.setId(taskDetailId);
+        e.setLockStatus(2); // 1锁定 2解锁 3正常扣减
+        wareOrderTaskDetailService.updateById(e);
     }
 
     @Data

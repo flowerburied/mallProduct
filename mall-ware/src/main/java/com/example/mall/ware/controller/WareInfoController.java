@@ -27,6 +27,9 @@ public class WareInfoController {
     @Autowired
     private WareInfoService wareInfoService;
 
+
+
+
     @GetMapping("/fare")
     public R getFare(@RequestParam("addrId") Long addrId) {
 

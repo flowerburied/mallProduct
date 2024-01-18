@@ -22,10 +22,10 @@ public class MyRabbitConfig {
         return new Jackson2JsonMessageConverter();
     }
 
-    @RabbitListener(queues = "stock.release.stock.queue")
-    public void handleRabbitListener(Message message) {
-
-    }
+//    @RabbitListener(queues = "stock.release.stock.queue")
+//    public void handleRabbitListener(Message message) {
+//
+//    }
 
     @Bean
     public Exchange stockEventExchange() {

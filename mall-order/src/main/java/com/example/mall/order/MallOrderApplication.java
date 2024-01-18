@@ -9,8 +9,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@EnableTransactionManagement
-@EnableAspectJAutoProxy(exposeProxy = true)
+//@EnableTransactionManagement
+//@EnableAspectJAutoProxy(exposeProxy = true)
 @EnableDiscoveryClient
 @EnableFeignClients
 @EnableRedisHttpSession

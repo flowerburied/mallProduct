@@ -2,6 +2,7 @@ package com.example.mall.order.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.example.common.constant.OrderConstant;
@@ -224,18 +225,46 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     }
 
+    @Override
+    public OrderEntity getOrderByOrderSn(String orderSn) {
+
+        LambdaQueryWrapper<OrderEntity> orderWrapper = new LambdaQueryWrapper<>();
+        orderWrapper.eq(OrderEntity::getOrderSn, orderSn);
+        OrderEntity one = this.getOne(orderWrapper);
+
+        return one;
+    }
+
+    @Override
+    public void testFun(String orderSn, String id) {
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setId(Long.valueOf(id));
+        orderEntity.setOrderSn(orderSn);
+        orderEntity.setModifyTime(new Date());
+        baseMapper.insert(orderEntity);
+    }
+
 
     //保存订单数据
     private void saveOrder(OrderCreateTo order) {
-        OrderEntity orderEntity = order.getOrder();
-        orderEntity.setModifyTime(new Date());
+        OrderEntity getOrder = order.getOrder();
+//        orderEntity.setModifyTime(new Date());
 
+
+        OrderEntity orderEntity = new OrderEntity();
+
+        orderEntity.setId(getOrder.getId());
+        orderEntity.setOrderSn(getOrder.getOrderSn());
+        orderEntity.setModifyTime(new Date());
         baseMapper.insert(orderEntity);
+//        int insert = baseMapper.insert(orderEntity);
+//        System.out.println("insert==" + insert);
 
         List<OrderItemEntity> items = order.getItems();
 
-        orderItemService.saveBatch(items);
+        boolean saveBatch = orderItemService.saveBatch(items);
 
+        System.out.println("saveBatch==" + saveBatch);
     }
 
     private OrderCreateTo createOrder() {
@@ -356,7 +385,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         if (spuInfoBuSkuId.getCode() == 0) {
             SpuInfoVo data = spuInfoBuSkuId.getData(new TypeReference<SpuInfoVo>() {
             });
-            System.out.println("data=="+data);
+            System.out.println("data==" + data);
             itemEntity.setSpuId(data.getId());
             itemEntity.setSpuBrand(data.getBrandId().toString());
             itemEntity.setSpuName(data.getSpuName());

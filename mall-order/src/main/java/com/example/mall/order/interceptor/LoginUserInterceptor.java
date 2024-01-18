@@ -4,6 +4,7 @@ package com.example.mall.order.interceptor;
 import com.example.common.constant.AuthServerConstant;
 import com.example.common.vo.MemberRespondVo;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +19,18 @@ public class LoginUserInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+
+        AntPathMatcher ant = new AntPathMatcher();
+        String uri = request.getRequestURI();
+        System.out.println("url===" + uri);
+        boolean match = ant.match("/order/order/**", uri);
+        boolean match0 = ant.match("/order/order/hello", uri); // 测试项
+        boolean match1 = ant.match("/order/alipay/notify", uri);
+        if (match || match1 || match0) {
+            // 对于RabbitMQ Listener的请求不容易验证登录（和业务不是一个线程丢失了上下文），故直接放行
+            return true;
+        }
+
 
         HttpSession session = request.getSession();
         MemberRespondVo attribute = (MemberRespondVo) session.getAttribute(AuthServerConstant.LOGIN_USER);

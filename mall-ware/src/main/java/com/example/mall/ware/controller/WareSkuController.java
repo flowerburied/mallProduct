@@ -7,6 +7,7 @@ import java.util.Map;
 import com.example.common.exception.BizCodeEnum;
 import com.example.common.to.SkuHasStockVo;
 import com.example.common.exception.NoStockException;
+import com.example.mall.ware.vo.FareVo;
 import com.example.mall.ware.vo.WareSkuLockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,13 @@ public class WareSkuController {
     @Autowired
     private WareSkuService wareSkuService;
 
+
+    @GetMapping("/testSql")
+    public R testFun(@RequestParam("skuId") Long skuId, @RequestParam("wareId") Long wareId, @RequestParam("num") Integer num, @RequestParam("taskDetailId") Long taskDetailId) {
+
+        wareSkuService.unlockStockTrue(skuId, wareId, num, taskDetailId);
+        return R.ok();
+    }
 
     @GetMapping("/sql")
     public R testSql(@RequestParam("skuId") Long skuId, @RequestParam("wareId") Long wareId, @RequestParam("num") Integer num) {
