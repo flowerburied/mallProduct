@@ -10,4 +10,4 @@ spring:
     store-type: redis
     timeout: 30m
 server:
-  port: 12000
+  port: 14000

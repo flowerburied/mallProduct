@@ -33,7 +33,7 @@ public class MemberReceiveAddressServiceImpl extends ServiceImpl<MemberReceiveAd
     @Override
     public List<MemberReceiveAddressEntity> getAddress(Long memberId) {
         LambdaQueryWrapper<MemberReceiveAddressEntity> memberWrapper = new LambdaQueryWrapper<>();
-        memberWrapper.eq(MemberReceiveAddressEntity::getMemberId, memberId);
+        memberWrapper.eq(MemberReceiveAddressEntity::getId, memberId);
 
         List<MemberReceiveAddressEntity> memberReceiveAddressEntities = baseMapper.selectList(memberWrapper);
         return memberReceiveAddressEntities;

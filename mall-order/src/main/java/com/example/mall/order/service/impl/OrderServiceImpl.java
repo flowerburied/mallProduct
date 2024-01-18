@@ -2,6 +2,7 @@ package com.example.mall.order.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.example.common.constant.OrderConstant;
 import com.example.common.exception.NoStockException;
@@ -19,6 +20,7 @@ import com.example.mall.order.service.OrderItemService;
 import com.example.mall.order.to.OrderCreateTo;
 import com.example.mall.order.vo.*;
 import io.seata.spring.annotation.GlobalTransactional;
+import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -48,7 +50,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.annotation.Resource;
 
-
+@Slf4j
 @Service("orderService")
 public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> implements OrderService {
 
@@ -107,8 +109,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             System.out.println("cart线程===" + Thread.currentThread().getId());
             RequestContextHolder.setRequestAttributes(requestAttributes);
             //        查询购物车所选的购物项
-            List<OrderItemVo> currentCartItem = cartFeignService.getCurrentCartItem();
-            confirmVo.setOrderItems(currentCartItem);
+//            List<OrderItemVo> currentCartItem = cartFeignService.getCurrentCartItem();
+//            confirmVo.setOrderItems(currentCartItem);
+
+            R res = cartFeignService.getCurrentCartItem();
+            if (res.getCode() == 0) {
+                confirmVo.setOrderItems(res.getData(new TypeReference<List<OrderItemVo>>() {
+                }));
+            }
         }, threadPoolExecutor).thenRunAsync(() -> {
             List<OrderItemVo> orderItems = confirmVo.getOrderItems();
             List<Long> collect = orderItems.stream().map(item -> item.getSkuId()).collect(Collectors.toList());
@@ -237,6 +245,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         OrderEntity orderEntity = buildOrder(orderSn);
         //获取到所有的订单项
         List<OrderItemEntity> itemEntities = buildOrderItems(orderSn);
+        System.out.println("itemEntities==" + itemEntities);
 //        验价
         computerPrice(orderEntity, itemEntities);
         orderCreateTo.setOrder(orderEntity);
@@ -315,19 +324,26 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     //构建订单项数据
     private List<OrderItemEntity> buildOrderItems(String orderSn) {
         //最后确认各个商品价格
-        List<OrderItemVo> currentCartItem = cartFeignService.getCurrentCartItem();
-        if (currentCartItem != null && currentCartItem.size() > 0) {
-            List<OrderItemEntity> itemEntities = currentCartItem.stream().map(cartItem -> {
-                OrderItemEntity orderItemEntity = buildOrderItem(cartItem);
-//                orderItemEntity.setIntegrationAmount();
-                orderItemEntity.setOrderSn(orderSn);
-                return orderItemEntity;
+//        List<OrderItemVo>
+        // 【最后】确定每个购物项的价格
+        R r2 = cartFeignService.getCurrentCartItem();
+        List<OrderItemEntity> collect = new ArrayList<>();
+        if (r2.getCode() == 0) {
+            List<OrderItemVo> data = r2.getData(new TypeReference<List<OrderItemVo>>() {
+            });
+            if (CollectionUtils.isNotEmpty(data)) {
+                System.out.println("buildOrderItem===" + data);
+                collect = data.stream().map(i -> {
+                    OrderItemEntity itemEntity = buildOrderItem(i);
+                    itemEntity.setOrderSn(orderSn);
+                    return itemEntity;
+                }).collect(Collectors.toList());
 
-            }).collect(Collectors.toList());
-
-            return itemEntities;
+            }
+        } else {
+            log.error("远程调用cartFeignService.list()出错");
         }
-        return null;
+        return collect;
     }
 
     //构建某一个订单项
@@ -340,12 +356,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         if (spuInfoBuSkuId.getCode() == 0) {
             SpuInfoVo data = spuInfoBuSkuId.getData(new TypeReference<SpuInfoVo>() {
             });
+            System.out.println("data=="+data);
             itemEntity.setSpuId(data.getId());
             itemEntity.setSpuBrand(data.getBrandId().toString());
             itemEntity.setSpuName(data.getSpuName());
             itemEntity.setCategoryId(data.getCatalogId());
         } else {
-//            log.error("远程调用出错:productFeignService.getSpuInfoBySkuId");
+            log.error("远程调用出错:productFeignService.getSpuInfoBySkuId");
         }
 
         //商品sku信息

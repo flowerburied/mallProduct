@@ -27,6 +27,7 @@ public class MemberReceiveAddressController {
 
     @GetMapping("/{memberId}/addresses")
     public List<MemberReceiveAddressEntity> getAddress(@PathVariable("memberId") Long memberId) {
+        System.out.println("memberId"+memberId);
         List<MemberReceiveAddressEntity> memberReceiveAddressEntities = memberReceiveAddressService.getAddress(memberId);
 
         return memberReceiveAddressEntities;
@@ -50,6 +51,7 @@ public class MemberReceiveAddressController {
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id) {
+
         MemberReceiveAddressEntity memberReceiveAddress = memberReceiveAddressService.getById(id);
 
         return R.ok().put("memberReceiveAddress", memberReceiveAddress);

@@ -1,5 +1,6 @@
 package com.example.mall.cart.controller;
 
+import com.example.common.utils.R;
 import com.example.mall.cart.service.CartService;
 import com.example.mall.cart.vo.Cart;
 import com.example.mall.cart.vo.CartItem;
@@ -24,9 +25,9 @@ public class CartController {
 
     @ResponseBody
     @GetMapping("/getCurrentCartItems")
-    public List<CartItem> getCurrentCartItem() {
+    public R getCurrentCartItem() {
         List<CartItem> cartItems = cartService.getUserCartItems();
-        return cartItems;
+        return R.ok().setData(cartItems);
     }
 
     @GetMapping(value = "/deleteItem")

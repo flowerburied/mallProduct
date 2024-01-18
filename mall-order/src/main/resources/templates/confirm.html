@@ -755,7 +755,7 @@
 		//给表单回填选择的地址
 		$("#addrIdInput").val(addrId);
 		//发送ajax获取运费信息
-		$.get("http://mall.com/api/ware/wareinfo/fare?addrId=" + addrId, function (resp) {
+		$.get("http://ware.mall.com/api/ware/wareinfo/fare?addrId=" + addrId, function (resp) {
 			$("#fareEle").text(resp.data.fare);
 			var total = [[${orderConfirmData.total}]];
 			//设置运费
