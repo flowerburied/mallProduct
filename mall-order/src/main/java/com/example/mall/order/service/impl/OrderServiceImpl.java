@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.example.common.constant.OrderConstant;
 import com.example.common.exception.NoStockException;
+import com.example.common.to.mq.OrderTo;
 import com.example.common.utils.R;
 import com.example.common.vo.MemberRespondVo;
 import com.example.mall.order.dao.OrderItemDao;
@@ -20,10 +21,12 @@ import com.example.mall.order.interceptor.LoginUserInterceptor;
 import com.example.mall.order.service.OrderItemService;
 import com.example.mall.order.to.OrderCreateTo;
 import com.example.mall.order.vo.*;
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -181,10 +184,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 //金额对比
 
 //                保存订单
-                saveOrder(order);
+                OrderEntity saveOrderEntity = saveOrder(order);
 //                库存锁定,只要有异常回滚订单数据
                 WareSkuLockVo wareSkuLockVo = new WareSkuLockVo();
-                wareSkuLockVo.setOrderSn(order.getOrder().getOrderSn());
+                wareSkuLockVo.setOrderSn(saveOrderEntity.getOrderSn());
                 List<OrderItemVo> locks = order.getItems().stream().map(item -> {
                     OrderItemVo orderItemVo = new OrderItemVo();
                     orderItemVo.setSkuId(item.getSkuId());
@@ -198,7 +201,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 R r = wmsFeignService.orderLockStock(wareSkuLockVo);
                 if (r.getCode() == 0) {
                     //锁成功
-                    submitVo.setOrder(order.getOrder());
+                    submitVo.setOrder(saveOrderEntity);
 
                     //调试出错
 //                    int i = 10 / 0;  //回滚测试
@@ -206,7 +209,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     rabbitTemplate.convertAndSend(
                             "order-event-exchange",
                             "order-create-order",
-                            order.getOrder());
+                            saveOrderEntity);
 
                     return submitVo;
                 } else {
@@ -264,6 +267,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             upDataOrder.setId(orderEntity.getId());
             upDataOrder.setStatus(OrderStatusEnum.CANCLED.getCode());
             this.updateById(upDataOrder);
+            //发给MQ
+            OrderTo orderTo = new OrderTo();
+            BeanUtils.copyProperties(currentOrder, orderTo);
+            rabbitTemplate.convertAndSend("order-event-exchange",
+                    "order.release.other",
+                    orderTo);
 
         }
 
@@ -272,17 +281,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 
     //保存订单数据
-    private void saveOrder(OrderCreateTo order) {
+    private OrderEntity saveOrder(OrderCreateTo order) {
         OrderEntity getOrder = order.getOrder();
 //        orderEntity.setModifyTime(new Date());
 
 
-        OrderEntity orderEntity = new OrderEntity();
-
-        orderEntity.setId(getOrder.getId());
-        orderEntity.setOrderSn(getOrder.getOrderSn());
-        orderEntity.setModifyTime(new Date());
-        baseMapper.insert(orderEntity);
+        getOrder.setModifyTime(new Date());
+        baseMapper.insert(getOrder);
 //        int insert = baseMapper.insert(orderEntity);
 //        System.out.println("insert==" + insert);
 
@@ -291,6 +296,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         boolean saveBatch = orderItemService.saveBatch(items);
 
         System.out.println("saveBatch==" + saveBatch);
+        System.out.println("getOrder===" + getOrder);
+        return getOrder;
     }
 
     private OrderCreateTo createOrder() {
@@ -298,6 +305,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         //创建订单号
         String orderSn = IdWorker.getTimeId();
         OrderEntity orderEntity = buildOrder(orderSn);
+        System.out.println("itemEntities==" + orderEntity);
         //获取到所有的订单项
         List<OrderItemEntity> itemEntities = buildOrderItems(orderSn);
         System.out.println("itemEntities==" + itemEntities);

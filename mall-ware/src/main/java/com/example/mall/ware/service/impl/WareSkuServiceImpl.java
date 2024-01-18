@@ -3,6 +3,7 @@ package com.example.mall.ware.service.impl;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.example.common.to.mq.OrderTo;
 import com.example.common.to.mq.StockDetailTo;
 import com.example.common.to.mq.StockLockedTo;
 import com.example.common.utils.R;
@@ -317,6 +318,26 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 throw new RuntimeException("远程服务调用失败");
             }
         }
+    }
+
+    //防止订单服务卡顿，导致订单状态消息一直改不了，库存消息优先到期。查订单状态新建状态，什么都不做就走了
+    @Transactional
+    @Override
+    public void unOrderLockStock(OrderTo orderTo) {
+        String orderSn = orderTo.getOrderSn();
+        //  查一下最新的库存解锁状态，防止重复解锁库存
+        WareOrderTaskEntity taskEntity = wareOrderTaskService.getOrderTaskByOrderSn(orderSn);
+        Long taskId = taskEntity.getId();
+        List<WareOrderTaskDetailEntity> list = wareOrderTaskDetailService.list(new LambdaQueryWrapper<WareOrderTaskDetailEntity>()
+                .eq(WareOrderTaskDetailEntity::getTaskId, taskId)
+                .eq(WareOrderTaskDetailEntity::getLockStatus, 1));
+        for (WareOrderTaskDetailEntity detailEntity : list) {
+            this.unlockStockTrue(detailEntity.getSkuId(),
+                    detailEntity.getWareId(),
+                    detailEntity.getSkuNum(),
+                    detailEntity.getId());
+        }
+//        unlockStockTrue
     }
 
     @Override

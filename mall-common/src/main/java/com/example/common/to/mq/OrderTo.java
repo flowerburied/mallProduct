@@ -1,32 +1,12 @@
-package com.example.mall.order.entity;
-
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-
-import java.math.BigDecimal;
-import java.io.Serializable;
-import java.util.Date;
+package com.example.common.to.mq;
 
 import lombok.Data;
-import lombok.ToString;
 
-/**
- * ����
- *
- * @author FlowerBuried
- * @email 2842511561@qq.com
- * @date 2023-12-19 13:57:24
- */
+import java.math.BigDecimal;
+import java.util.Date;
+
 @Data
-@TableName("oms_order")
-@ToString
-public class OrderEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * id
-     */
-    @TableId
+public class OrderTo {
     private Long id;
     /**
      * member_id
@@ -192,5 +172,4 @@ public class OrderEntity implements Serializable {
      * �޸�ʱ��
      */
     private Date modifyTime;
-
 }

@@ -3,6 +3,7 @@ package com.example.mall.ware.listener;
 
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.example.common.to.mq.OrderTo;
 import com.example.common.to.mq.StockDetailTo;
 import com.example.common.to.mq.StockLockedTo;
 import com.example.common.utils.R;
@@ -33,7 +34,6 @@ public class StockReleaseListener {
     WareSkuService wareSkuService;
 
 
-
     /**
      * 库存自动解锁
      *
@@ -50,13 +50,24 @@ public class StockReleaseListener {
 
             channel.basicReject(message.getMessageProperties().getDeliveryTag(), true);
         }
-
-
     }
 
     /**
      * 回滚数据库的-库存数据
      */
+    @RabbitHandler
+    public void handleOrderCloseRelease(OrderTo orderTo, Message message, Channel channel) throws IOException {
+        System.out.println("订单关闭准备解锁库存==" + orderTo);
+        try {
+            wareSkuService.unOrderLockStock(orderTo);
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+        } catch (Exception e) {
+
+            channel.basicReject(message.getMessageProperties().getDeliveryTag(), true);
+        }
+
+
+    }
 
 
 }
