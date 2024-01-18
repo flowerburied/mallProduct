@@ -18,10 +18,7 @@ import java.util.Map;
 public class MyMQConfig {
 
 
-    @RabbitListener(queues = "order.release.order.queue")
-    public void handleRabbitListener(Message message) {
 
-    }
 
     @RabbitListener(queues = "order.release.order.queue")
     public void listener(OrderEntity orderEntity, Channel channel, Message message) throws IOException {

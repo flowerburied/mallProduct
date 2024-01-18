@@ -23,6 +23,7 @@ import com.example.mall.order.vo.*;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -72,6 +73,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Resource
     OrderItemService orderItemService;
+
+    @Resource
+    RabbitTemplate rabbitTemplate;
 
 
     @Override
@@ -197,7 +201,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     submitVo.setOrder(order.getOrder());
 
                     //调试出错
-                    int i = 10 / 0;  //回滚测试
+//                    int i = 10 / 0;  //回滚测试
+                    //订单创建成功发送消息给mq
+                    rabbitTemplate.convertAndSend(
+                            "order-event-exchange",
+                            "order-create-order",
+                            order.getOrder());
 
                     return submitVo;
                 } else {
@@ -242,6 +251,23 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderEntity.setOrderSn(orderSn);
         orderEntity.setModifyTime(new Date());
         baseMapper.insert(orderEntity);
+    }
+
+    @Override
+    public void closeOrder(OrderEntity orderEntity) {
+
+        OrderEntity currentOrder = this.getById(orderEntity.getId());
+
+        if (currentOrder.getStatus() == OrderStatusEnum.CREATE_NEW.getCode()) {
+            //关单
+            OrderEntity upDataOrder = new OrderEntity();
+            upDataOrder.setId(orderEntity.getId());
+            upDataOrder.setStatus(OrderStatusEnum.CANCLED.getCode());
+            this.updateById(upDataOrder);
+
+        }
+
+
     }
 
 
