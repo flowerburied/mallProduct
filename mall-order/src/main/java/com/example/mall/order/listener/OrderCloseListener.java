@@ -23,6 +23,10 @@ public class OrderCloseListener {
     public void handleRabbitListener(OrderEntity orderEntity, Message message, Channel channel) throws IOException {
         System.out.println("收到过期订单==" + orderEntity);
         try {
+
+            //当前消息是否被第二次及以后（重新）派发
+//            Boolean redelivered = message.getMessageProperties().getRedelivered();
+
             orderService.closeOrder(orderEntity);
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
         } catch (Exception e) {

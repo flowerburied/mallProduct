@@ -40,7 +40,9 @@ public class MyRabbitConfig {
              */
             @Override
             public void confirm(CorrelationData correlationData, boolean b, String s) {
-                System.out.println("correlationData==" + correlationData + "==ack==" + b + "==cause==" + s);
+
+                //服务器收到了
+                System.out.println("服务器收到了correlationData==" + correlationData + "==ack==" + b + "==cause==" + s);
             }
         });
 
@@ -56,6 +58,7 @@ public class MyRabbitConfig {
              */
             @Override
             public void returnedMessage(Message message, int i, String s, String s1, String s2) {
+                //报错误了，修改数据库当前消息的状态
                 System.out.println("message===" + message);
             }
         });

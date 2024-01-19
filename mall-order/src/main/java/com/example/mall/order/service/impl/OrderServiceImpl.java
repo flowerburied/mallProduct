@@ -270,9 +270,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             //发给MQ
             OrderTo orderTo = new OrderTo();
             BeanUtils.copyProperties(currentOrder, orderTo);
-            rabbitTemplate.convertAndSend("order-event-exchange",
-                    "order.release.other",
-                    orderTo);
+            try {
+                //保证消息一定发送出去
+                rabbitTemplate.convertAndSend("order-event-exchange",
+                        "order.release.other",
+                        orderTo);
+            } catch (Exception e) {
+
+            }
+
 
         }
 
