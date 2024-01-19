@@ -1,8 +1,10 @@
 package com.example.mall.order.service.impl;
 
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.example.common.constant.OrderConstant;
@@ -12,6 +14,7 @@ import com.example.common.utils.R;
 import com.example.common.vo.MemberRespondVo;
 import com.example.mall.order.dao.OrderItemDao;
 import com.example.mall.order.entity.OrderItemEntity;
+import com.example.mall.order.entity.PaymentInfoEntity;
 import com.example.mall.order.enume.OrderStatusEnum;
 import com.example.mall.order.feign.CartFeignService;
 import com.example.mall.order.feign.MemberFeignService;
@@ -19,8 +22,10 @@ import com.example.mall.order.feign.ProductFeignService;
 import com.example.mall.order.feign.WmsFeignService;
 import com.example.mall.order.interceptor.LoginUserInterceptor;
 import com.example.mall.order.service.OrderItemService;
+import com.example.mall.order.service.PaymentInfoService;
 import com.example.mall.order.to.OrderCreateTo;
 import com.example.mall.order.vo.*;
+import com.example.mall.order.vo.pay.PayAsyncVo;
 import com.example.mall.order.vo.pay.PayVo;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import io.seata.spring.annotation.GlobalTransactional;
@@ -80,6 +85,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Resource
     RabbitTemplate rabbitTemplate;
+
+    @Resource
+    PaymentInfoService paymentInfoService;
 
 
     @Override
@@ -335,6 +343,40 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         page.setRecords(collect);
 
         return new PageUtils(page);
+    }
+
+    /**
+     * 处理支付宝的支付结果
+     *
+     * @param payAsyncVo
+     * @return
+     */
+    @Override
+    public String handlePayResult(PayAsyncVo payAsyncVo) {
+
+        //保存交易流水
+        PaymentInfoEntity infoEntity = new PaymentInfoEntity();
+        infoEntity.setAlipayTradeNo(payAsyncVo.getTrade_no());
+        infoEntity.setOrderSn(payAsyncVo.getOut_trade_no());
+        infoEntity.setPaymentStatus(payAsyncVo.getTrade_status());
+        infoEntity.setCallbackTime(payAsyncVo.getNotify_time());
+        paymentInfoService.save(infoEntity);
+
+        //修改订单信息
+        if (payAsyncVo.getTrade_status().equals("TRADE_SUCCESS") || payAsyncVo.getTrade_status().equals("TRADE_FINISHED")) {
+            String outTradeNo = payAsyncVo.getOut_trade_no();
+            this.updataOrderStatus(outTradeNo, OrderStatusEnum.PAYED.getCode());
+
+        }
+
+        return "success";
+    }
+
+    @Override
+    public void updataOrderStatus(String outTradeNo, Integer code) {
+        LambdaUpdateWrapper<OrderEntity> orderWrapper = new LambdaUpdateWrapper<>();
+        orderWrapper.eq(OrderEntity::getOrderSn, outTradeNo).setSql("order_sn=" + code);
+        baseMapper.update(null, orderWrapper);
     }
 
 

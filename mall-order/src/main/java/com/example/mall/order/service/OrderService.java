@@ -6,6 +6,7 @@ import com.example.mall.order.entity.OrderEntity;
 import com.example.mall.order.vo.OrderConfirmVo;
 import com.example.mall.order.vo.OrderSubmitVo;
 import com.example.mall.order.vo.SubmitOrderResponseVo;
+import com.example.mall.order.vo.pay.PayAsyncVo;
 import com.example.mall.order.vo.pay.PayVo;
 
 import java.util.Map;
@@ -37,5 +38,9 @@ public interface OrderService extends IService<OrderEntity> {
     PayVo getOrderPay(String orderSn);
 
     PageUtils queryPageWithItem(Map<String, Object> params);
+
+    String handlePayResult(PayAsyncVo payAsyncVo);
+
+    void updataOrderStatus(String outTradeNo, Integer code);
 }
 

@@ -25,7 +25,7 @@ public class LoginUserInterceptor implements HandlerInterceptor {
         System.out.println("url===" + uri);
         boolean match = ant.match("/order/order/status/**", uri);
         boolean match0 = ant.match("/order/order/hello", uri); // 测试项
-        boolean match1 = ant.match("/order/alipay/notify", uri);
+        boolean match1 = ant.match("/payed/notify", uri);
         if (match || match1 || match0) {
             // 对于RabbitMQ Listener的请求不容易验证登录（和业务不是一个线程丢失了上下文），故直接放行
             return true;
