@@ -21,6 +21,7 @@ import com.example.mall.order.interceptor.LoginUserInterceptor;
 import com.example.mall.order.service.OrderItemService;
 import com.example.mall.order.to.OrderCreateTo;
 import com.example.mall.order.vo.*;
+import com.example.mall.order.vo.pay.PayVo;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
@@ -283,6 +284,57 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         }
 
 
+    }
+
+    @Override
+    public PayVo getOrderPay(String orderSn) {
+
+        PayVo payVo = new PayVo();
+
+        OrderEntity orderByOrderSn = this.getOrderByOrderSn(orderSn);
+        BigDecimal bigDecimal = orderByOrderSn.getPayAmount().setScale(2, BigDecimal.ROUND_UP);
+        payVo.setTotal_amount(bigDecimal.toString());
+        payVo.setOut_trade_no(orderByOrderSn.getOrderSn());
+
+        List<OrderItemEntity> orderItemEntityList = orderItemService.list(new LambdaQueryWrapper<OrderItemEntity>()
+                .eq(OrderItemEntity::getOrderSn, orderByOrderSn.getOrderSn()));
+        OrderItemEntity orderItemEntity = orderItemEntityList.get(0);
+
+        payVo.setSubject(orderItemEntity.getSkuName());
+        payVo.setBody(orderItemEntity.getSkuAttrsVals());
+
+
+        return payVo;
+
+
+    }
+
+    @Override
+    public PageUtils queryPageWithItem(Map<String, Object> params) {
+
+        MemberRespondVo memberRespondVo = LoginUserInterceptor.loginUser.get();
+
+        System.out.println("memberRespondVo===" + memberRespondVo);
+        IPage<OrderEntity> page = this.page(
+                new Query<OrderEntity>().getPage(params),
+                new LambdaQueryWrapper<OrderEntity>()
+                        .eq(OrderEntity::getMemberId, memberRespondVo.getId())
+                        .orderByDesc(OrderEntity::getId)
+        );
+
+        List<OrderEntity> collect = page.getRecords().stream().map(item -> {
+
+            List<OrderItemEntity> list = orderItemService.list(new LambdaQueryWrapper<OrderItemEntity>()
+                    .eq(OrderItemEntity::getOrderSn, item.getOrderSn()));
+
+            item.setItemEntities(list);
+
+            return item;
+        }).collect(Collectors.toList());
+
+        page.setRecords(collect);
+
+        return new PageUtils(page);
     }
 
 

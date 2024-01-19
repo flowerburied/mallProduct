@@ -6,6 +6,7 @@ import com.example.mall.order.entity.OrderEntity;
 import com.example.mall.order.vo.OrderConfirmVo;
 import com.example.mall.order.vo.OrderSubmitVo;
 import com.example.mall.order.vo.SubmitOrderResponseVo;
+import com.example.mall.order.vo.pay.PayVo;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -31,5 +32,10 @@ public interface OrderService extends IService<OrderEntity> {
     void testFun(String orderSn, String id);
 
     void closeOrder(OrderEntity orderEntity);
+
+    //获取当前订单是支付消息
+    PayVo getOrderPay(String orderSn);
+
+    PageUtils queryPageWithItem(Map<String, Object> params);
 }
 

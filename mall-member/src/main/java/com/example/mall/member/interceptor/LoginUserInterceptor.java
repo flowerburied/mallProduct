@@ -1,4 +1,4 @@
-package com.example.mall.order.interceptor;
+package com.example.mall.member.interceptor;
 
 
 import com.example.common.constant.AuthServerConstant;
@@ -23,10 +23,11 @@ public class LoginUserInterceptor implements HandlerInterceptor {
         AntPathMatcher ant = new AntPathMatcher();
         String uri = request.getRequestURI();
         System.out.println("url===" + uri);
-        boolean match = ant.match("/order/order/status/**", uri);
+        boolean match = ant.match("/order/order/**", uri);
         boolean match0 = ant.match("/order/order/hello", uri); // 测试项
         boolean match1 = ant.match("/order/alipay/notify", uri);
-        if (match || match1 || match0) {
+        boolean match2 = ant.match("/member/**", uri);
+        if (match || match1 || match0 || match2) {
             // 对于RabbitMQ Listener的请求不容易验证登录（和业务不是一个线程丢失了上下文），故直接放行
             return true;
         }

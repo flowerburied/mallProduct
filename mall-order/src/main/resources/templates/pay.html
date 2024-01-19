@@ -13,10 +13,10 @@
     <ul>
       <li>
         <a th:if="${session.loginUser!=null}">欢迎您，[[${session.loginUser.nickname}]]</a>
-        <a href="http://auth.projectdemo.top/login.html" th:if="${session.loginUser==null}">你好，请登录</a>
+        <a href="http://auth.mall.com/login.html" th:if="${session.loginUser==null}">你好，请登录</a>
       </li>
       <li>
-        <a class="li_2" href="http://auth.projectdemo.top/register.html"
+        <a class="li_2" href="http://auth.mall.com/register.html"
            th:if="${session.loginUser==null}">免费注册</a>
       </li>
       <li>我的订单</li>
@@ -108,7 +108,7 @@
         <img alt="" src="/static/order/pay/img/weixin.png">微信支付
       </li>
       <li>
-        <a th:href="'http://order.projectdemo.top/order/alipay/pay?orderSn='+${submitOrderResp.order.getOrderSn()}">
+        <a th:href="'http://order.mall.com/payOrder?orderSn='+${submitOrderResp.order.getOrderSn()}">
           <img alt="" src="/static/order/pay/img/zhifubao.png" style="weight:auto;height:30px;">支付宝
         </a>
       </li>
