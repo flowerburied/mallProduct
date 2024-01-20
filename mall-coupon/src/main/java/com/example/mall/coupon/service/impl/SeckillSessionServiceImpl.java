@@ -48,6 +48,7 @@ public class SeckillSessionServiceImpl extends ServiceImpl<SeckillSessionDao, Se
     }
 
 
+    //大大减少IO次数在内存中计算更快 避免返回null值（会照成空指针）
     @Override
     public List<SeckillSessionEntity> getLateSession() {
         LambdaQueryWrapper<SeckillSessionEntity> seckillWrapper = new LambdaQueryWrapper<>();
@@ -68,6 +69,7 @@ public class SeckillSessionServiceImpl extends ServiceImpl<SeckillSessionDao, Se
             Map<Long, List<SeckillSkuRelationEntity>> skuMap = skuRelations.stream()
                     .collect(Collectors.groupingBy(SeckillSkuRelationEntity::getPromotionSessionId));
 
+            System.out.println("skuMap===" + skuMap);
             for (SeckillSessionEntity sessionEntity : list) {
                 sessionEntity.setRelationSkus(skuMap.get(sessionEntity.getId()));
             }

@@ -19,7 +19,7 @@ public class SeckillSkuScheduled {
     @Scheduled(cron = "0 0 3 * * ?")
     public void uploadSeckillSkuLate() {
         //重复上架无需处理，因为可以覆盖
-
+        log.info("上架秒杀的商品信息");
         //  秒杀上架功能
         seckillService.uploadSeckillSkuLate();
     }
