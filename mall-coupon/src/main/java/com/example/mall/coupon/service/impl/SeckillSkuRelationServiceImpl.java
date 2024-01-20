@@ -1,5 +1,7 @@
 package com.example.mall.coupon.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -20,9 +22,17 @@ public class SeckillSkuRelationServiceImpl extends ServiceImpl<SeckillSkuRelatio
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
+
+        LambdaQueryWrapper<SeckillSkuRelationEntity> skuWrapper = new LambdaQueryWrapper<>();
+        String promotionSessionId = (String) params.get("promotionSessionId");
+
+        if (!StringUtils.isEmpty(promotionSessionId)) {
+            skuWrapper.eq(SeckillSkuRelationEntity::getPromotionSessionId, promotionSessionId);
+        }
+
         IPage<SeckillSkuRelationEntity> page = this.page(
                 new Query<SeckillSkuRelationEntity>().getPage(params),
-                new QueryWrapper<SeckillSkuRelationEntity>()
+                skuWrapper
         );
 
         return new PageUtils(page);
