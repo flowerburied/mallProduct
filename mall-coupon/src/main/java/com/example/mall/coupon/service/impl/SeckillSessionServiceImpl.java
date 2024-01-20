@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -46,29 +47,60 @@ public class SeckillSessionServiceImpl extends ServiceImpl<SeckillSessionDao, Se
         return new PageUtils(page);
     }
 
+
     @Override
     public List<SeckillSessionEntity> getLateSession() {
-
         LambdaQueryWrapper<SeckillSessionEntity> seckillWrapper = new LambdaQueryWrapper<>();
         seckillWrapper.between(SeckillSessionEntity::getStartTime, startTime(), endTime());
+
         List<SeckillSessionEntity> list = baseMapper.selectList(seckillWrapper);
 
         if (CollectionUtils.isNotEmpty(list)) {
-            List<SeckillSessionEntity> collect = list.stream().map(item -> {
-                Long id = item.getId();
-                LambdaQueryWrapper<SeckillSkuRelationEntity> relationWrapper = new LambdaQueryWrapper<>();
-                relationWrapper.eq(SeckillSkuRelationEntity::getPromotionSessionId, id);
-                List<SeckillSkuRelationEntity> list1 = seckillSkuRelationService.list(relationWrapper);
-                item.setRelationSkus(list1);
+            // 获取所有秒杀场次的id列表
+            List<Long> sessionIds = list.stream().map(SeckillSessionEntity::getId).collect(Collectors.toList());
 
-                return item;
-            }).collect(Collectors.toList());
-            return collect;
+            // 使用一个查询获取所有关联的秒杀商品
+            LambdaQueryWrapper<SeckillSkuRelationEntity> relationWrapper = new LambdaQueryWrapper<>();
+            relationWrapper.in(SeckillSkuRelationEntity::getPromotionSessionId, sessionIds);
+            List<SeckillSkuRelationEntity> skuRelations = seckillSkuRelationService.list(relationWrapper);
+
+            // 将关联的商品信息设置到对应的秒杀场次中
+            Map<Long, List<SeckillSkuRelationEntity>> skuMap = skuRelations.stream()
+                    .collect(Collectors.groupingBy(SeckillSkuRelationEntity::getPromotionSessionId));
+
+            for (SeckillSessionEntity sessionEntity : list) {
+                sessionEntity.setRelationSkus(skuMap.get(sessionEntity.getId()));
+            }
+
+            return list;
         }
 
-        return null;
-
+        return Collections.emptyList();
     }
+
+//    @Override
+//    public List<SeckillSessionEntity> getLateSession() {
+//
+//        LambdaQueryWrapper<SeckillSessionEntity> seckillWrapper = new LambdaQueryWrapper<>();
+//        seckillWrapper.between(SeckillSessionEntity::getStartTime, startTime(), endTime());
+//        List<SeckillSessionEntity> list = baseMapper.selectList(seckillWrapper);
+//
+//        if (CollectionUtils.isNotEmpty(list)) {
+//            List<SeckillSessionEntity> collect = list.stream().map(item -> {
+//                Long id = item.getId();
+//                LambdaQueryWrapper<SeckillSkuRelationEntity> relationWrapper = new LambdaQueryWrapper<>();
+//                relationWrapper.eq(SeckillSkuRelationEntity::getPromotionSessionId, id);
+//                List<SeckillSkuRelationEntity> list1 = seckillSkuRelationService.list(relationWrapper);
+//                item.setRelationSkus(list1);
+//
+//                return item;
+//            }).collect(Collectors.toList());
+//            return collect;
+//        }
+//
+//        return null;
+//
+//    }
 
 
     private String startTime() {
