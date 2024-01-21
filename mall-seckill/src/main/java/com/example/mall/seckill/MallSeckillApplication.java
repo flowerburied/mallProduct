@@ -1,6 +1,7 @@
 package com.example.mall.seckill;
 
 import org.redisson.spring.session.config.EnableRedissonHttpSession;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;

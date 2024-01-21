@@ -14,6 +14,16 @@ spring:
     store-type: redis
   thymeleaf:
     cache: false
+  rabbitmq:
+    host: 192.168.18.128
+    port: 5672
+    username: admin
+    password: admin
+    virtual-host: /
+    #手动ack消息
+    listener:
+      simple:
+        acknowledge-mode: manual
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml

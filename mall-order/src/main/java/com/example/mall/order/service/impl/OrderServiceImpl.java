@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.example.common.constant.OrderConstant;
 import com.example.common.exception.NoStockException;
 import com.example.common.to.mq.OrderTo;
+import com.example.common.to.mq.SeckillOrderTo;
 import com.example.common.utils.R;
 import com.example.common.vo.MemberRespondVo;
 import com.example.mall.order.dao.OrderItemDao;
@@ -377,6 +378,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         LambdaUpdateWrapper<OrderEntity> orderWrapper = new LambdaUpdateWrapper<>();
         orderWrapper.eq(OrderEntity::getOrderSn, outTradeNo).setSql("order_sn=" + code);
         baseMapper.update(null, orderWrapper);
+    }
+
+    @Override
+    public void createSeckillOrder(SeckillOrderTo seckillOrderTo) {
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setOrderSn(seckillOrderTo.getOrderSn());
+        orderEntity.setMemberId(seckillOrderTo.getMemberId());
+        orderEntity.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
+        orderEntity.setPayAmount(seckillOrderTo.getSeckillPrice().multiply(BigDecimal.valueOf(seckillOrderTo.getNum())));
+
+        this.save(orderEntity);
+
+        OrderItemEntity orderItemEntity = new OrderItemEntity();
+        orderItemEntity.setOrderSn(seckillOrderTo.getOrderSn());
+        orderItemEntity.setRealAmount(orderEntity.getPayAmount());
+        orderItemEntity.setSkuQuantity(seckillOrderTo.getNum());
+        orderItemEntity.setSkuId(seckillOrderTo.getSkuId());
+        // TODO 查询SKU详细信息并保存
+        orderItemService.save(orderItemEntity);
     }
 
 

@@ -1,6 +1,7 @@
 package com.example.mall.order.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.common.to.mq.SeckillOrderTo;
 import com.example.common.utils.PageUtils;
 import com.example.mall.order.entity.OrderEntity;
 import com.example.mall.order.vo.OrderConfirmVo;
@@ -42,5 +43,7 @@ public interface OrderService extends IService<OrderEntity> {
     String handlePayResult(PayAsyncVo payAsyncVo);
 
     void updataOrderStatus(String outTradeNo, Integer code);
+
+    void createSeckillOrder(SeckillOrderTo seckillOrderTo);
 }
 

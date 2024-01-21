@@ -18,8 +18,6 @@ import java.util.Map;
 public class MyMQConfig {
 
 
-
-
 //    @RabbitListener(queues = "order.release.order.queue")
 //    public void listener(OrderEntity orderEntity, Channel channel, Message message) throws IOException {
 //
@@ -83,6 +81,7 @@ public class MyMQConfig {
 
     /**
      * 订单释放和库存释放进行绑定
+     *
      * @return
      */
     @Bean
@@ -91,6 +90,21 @@ public class MyMQConfig {
                 Binding.DestinationType.QUEUE,
                 "order-event-exchange",
                 "order.release.other.#",
+                null);
+    }
+
+
+    @Bean
+    public Queue orderSeckillOrderQueue() {
+        return new Queue("order.seckill.order.queue", true, false, false);
+    }
+
+    @Bean
+    public Binding orderSeckillOrderQueueBinding() {
+        return new Binding("stock.seckill.stock.queue",  //目的地
+                Binding.DestinationType.QUEUE,  //目的地类型
+                "order-event-exchange",     //  绑定的交换机
+                "order.release.other.#",    //路由件
                 null);
     }
 
