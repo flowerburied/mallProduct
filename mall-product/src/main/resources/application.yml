@@ -37,6 +37,6 @@ alibaba:
     oss:
       endpoint: oss-cn-beijing.aliyuncs.com
 
-logging:
-  level:
-    com.example.mall: error
+#logging:
+#  level:
+#    com.example.mall: error

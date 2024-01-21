@@ -10,6 +10,8 @@ import com.example.mall.seckill.to.SeckillSkuRedisTo;
 import com.example.mall.seckill.vo.SeckillSessionWithSkus;
 import com.example.mall.seckill.vo.SeckillSkuVo;
 import com.example.mall.seckill.vo.SkuInfoVo;
+import io.seata.common.util.CollectionUtils;
+import jodd.util.CollectionUtil;
 import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -18,8 +20,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,6 +60,77 @@ public class SeckillServiceImpl implements SeckillService {
 
         }
 
+    }
+
+    //当前时间可以参与的秒杀商品
+    @Override
+    public List<SeckillSkuRedisTo> getCurrentSeckillSkus() {
+
+        //确定当前时间属于哪个秒杀场次
+        long time = new Date().getTime();
+
+        Set<String> keys = stringRedisTemplate.keys(SESSIONS_CACHE_PREFIX + "*");
+        for (String key : keys) {
+            String replace = key.replace(SESSIONS_CACHE_PREFIX, "");
+            String[] s = replace.split("_");
+            long start = Long.parseLong(s[0]);
+            long end = Long.parseLong(s[1]);
+            if (time >= start && time <= end) {
+                //获取秒杀场次所有的商品信息
+                List<String> range = stringRedisTemplate.opsForList().range(key, -100, 100);
+                BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(SKUKILL_CACHE_PREFIX);
+                List<String> list = hashOps.multiGet(range);
+
+                if (CollectionUtils.isNotEmpty(list)) {
+                    List<SeckillSkuRedisTo> collect = list.stream().map(item -> {
+                        SeckillSkuRedisTo redisTo = JSON.parseObject(item.toString(), SeckillSkuRedisTo.class);
+//                        redisTo.setRandomCode(null);
+                        return redisTo;
+                    }).collect(Collectors.toList());
+                    return collect;
+                }
+                break;
+            }
+
+        }
+
+
+        //获取这个秒杀场次所有的商品信息
+        return Collections.emptyList();
+
+    }
+
+    @Override
+    public SeckillSkuRedisTo getSkuSeckillInfo(Long skuId) {
+        //找到所有需要参与秒杀商品的key
+        BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(SKUKILL_CACHE_PREFIX);
+        Set<String> keys = hashOps.keys();
+        if (CollectionUtils.isNotEmpty(keys)) {
+            String regs = "\\d_" + skuId;
+            for (String key : keys) {
+                if (Pattern.matches(regs, key)) {
+                    String json = hashOps.get(key);
+                    SeckillSkuRedisTo skuRedisTo = JSON.parseObject(json, SeckillSkuRedisTo.class);
+
+                    //计算时间
+                    long current = new Date().getTime();
+                    Long startTime = skuRedisTo.getStartTime();
+                    Long endTime = skuRedisTo.getEndTime();
+
+                    if (current >= startTime && current <= endTime) {
+
+                    } else {
+                        skuRedisTo.setRandomCode(null);
+                    }
+
+                    return skuRedisTo;
+                }
+
+
+            }
+        }
+
+        return null;
     }
 
     private void saveSessionSkuInfos(List<SeckillSessionWithSkus> data) {

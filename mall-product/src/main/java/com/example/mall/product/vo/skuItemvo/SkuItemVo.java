@@ -4,7 +4,8 @@ package com.example.mall.product.vo.skuItemvo;
 import com.example.mall.product.entity.SkuImagesEntity;
 import com.example.mall.product.entity.SkuInfoEntity;
 import com.example.mall.product.entity.SpuInfoDescEntity;
-import com.example.mall.product.vo.spusavevo.SeckillInfoVo;
+
+import com.example.mall.product.vo.seckill.SeckillInfoVo;
 import lombok.Data;
 
 
@@ -30,6 +31,22 @@ public class SkuItemVo {
     private List<SpuItemAttrGroupVo> groupAttrs;
 
     //6、秒杀商品的优惠信息
-    private SeckillInfoVo seckillSkuVo;
+    SeckillInfoVo seckillInfoVo;
+
+//    private static final long serialVersionUID = 1L;
+//
+////    SkuInfoEntity info; // sku 商品 entity
+////
+////    boolean hasStock = true;
+////
+////    List<SkuImagesEntity> images;  // sku 图片
+////
+////    SpuInfoDescEntity desp; // spu商品描述
+////
+////    List<SkuItemSaleAttrsVo> saleAttrs;  // 销售属性组合
+////
+////    List<SpuGroupBaseAttrVo> baseAttrs; // spu 规格参数信息
+////
+////    SeckillInfoVo seckillInfoVo; // 商品秒杀信息
 
 }

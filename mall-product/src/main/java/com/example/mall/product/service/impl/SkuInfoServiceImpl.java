@@ -1,11 +1,15 @@
 package com.example.mall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.common.utils.R;
 import com.example.mall.product.config.ThreadPoolConfigProperties;
 import com.example.mall.product.entity.SkuImagesEntity;
 import com.example.mall.product.entity.SpuInfoDescEntity;
 import com.example.mall.product.entity.SpuInfoEntity;
+import com.example.mall.product.feign.SeckillFeignService;
 import com.example.mall.product.service.*;
+import com.example.mall.product.vo.seckill.SeckillInfoVo;
 import com.example.mall.product.vo.skuItemvo.SkuItemSaleAttrsVo;
 import com.example.mall.product.vo.skuItemvo.SkuItemVo;
 import com.example.mall.product.vo.skuItemvo.SpuItemAttrGroupVo;
@@ -44,6 +48,9 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
     SkuSaleAttrValueService skuSaleAttrValueService;
     @Resource
     ThreadPoolExecutor threadPoolExecutor;
+    @Resource
+    SeckillFeignService seckillFeignService;
+
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -158,8 +165,21 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
             skuItemVo.setImages(skuImagesEntity);
         }, threadPoolExecutor);
 
+
+        //查询当前sku是否为秒杀优惠
+        CompletableFuture<Void> seckillFuture = CompletableFuture.runAsync(() -> {
+            R skuSeckillInfo = seckillFeignService.getSkuSeckillInfo(skuId);
+            if (skuSeckillInfo.getCode() == 0) {
+                SeckillInfoVo data = skuSeckillInfo.getData(new TypeReference<SeckillInfoVo>() {
+                });
+
+                skuItemVo.setSeckillInfoVo(data);
+            }
+        }, threadPoolExecutor);
+
+
         //等待所有任务都完成
-        CompletableFuture.allOf(saleFuture, descFuture, baseAttrFuture, imagesFuture).get();
+        CompletableFuture.allOf(saleFuture, descFuture, baseAttrFuture, imagesFuture, seckillFuture).get();
 
 
         return skuItemVo;

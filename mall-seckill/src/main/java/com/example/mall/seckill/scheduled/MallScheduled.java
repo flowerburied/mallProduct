@@ -16,9 +16,9 @@ public class MallScheduled {
      * "* *  *  *  *  ?"
      * 秒 分 时 日 月 钟
      */
-    @Async
-    @Scheduled(cron = "* * * * * ?")
-    public void hello() {
-        log.info("hello");
-    }
+//    @Async
+//    @Scheduled(cron = "* * * * * ?")
+//    public void hello() {
+//        log.info("hello");
+//    }
 }

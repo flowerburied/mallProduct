@@ -1,11 +1,14 @@
-package com.example.mall.product.vo.spusavevo;
+package com.example.mall.product.vo.seckill;
 
+import com.example.mall.product.entity.SkuInfoEntity;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
-public class SeckillInfoVo {
+public class SeckillInfoVo implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Long id;
     /**
      * 活动id
@@ -34,7 +37,7 @@ public class SeckillInfoVo {
     /**
      * 每人限购数量
      */
-    private BigDecimal seckillLimit;
+    private int seckillLimit;
     /**
      * 排序
      */
@@ -43,4 +46,7 @@ public class SeckillInfoVo {
     private Long startTime;
 
     private Long endTime;
+
+    //sku的详细信息
+    private SkuInfoEntity skuInfoEntity;
 }

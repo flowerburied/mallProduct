@@ -18,7 +18,7 @@ public class SearchController {
     @Resource
     MallSearchService mallSearchService;
 
-    @GetMapping("/list.html")
+    @GetMapping("/search.html")
     public String listPage(SearchParam searchParam, Model model, HttpServletRequest request) {
 //        System.out.println("searchParam===" + searchParam);
         String queryString = request.getQueryString();
