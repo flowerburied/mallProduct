@@ -2,15 +2,19 @@ package com.example.mall.seckill.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.example.common.utils.R;
+import com.example.common.vo.MemberRespondVo;
 import com.example.mall.seckill.feign.CouponFeignService;
 import com.example.mall.seckill.feign.ProductFeignService;
+import com.example.mall.seckill.interceptor.LoginUserInterceptor;
 import com.example.mall.seckill.service.SeckillService;
 import com.example.mall.seckill.to.SeckillSkuRedisTo;
 import com.example.mall.seckill.vo.SeckillSessionWithSkus;
 import com.example.mall.seckill.vo.SeckillSkuVo;
 import com.example.mall.seckill.vo.SkuInfoVo;
 import io.seata.common.util.CollectionUtils;
+import io.seata.common.util.StringUtils;
 import jodd.util.CollectionUtil;
 import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -130,6 +135,59 @@ public class SeckillServiceImpl implements SeckillService {
             }
         }
 
+        return null;
+    }
+
+    @Override
+    public String kill(String killId, String randomCode, Integer num) {
+
+        MemberRespondVo respondVo = LoginUserInterceptor.loginUser.get();
+
+        //获取秒杀商品的详情数据
+        BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(SKUKILL_CACHE_PREFIX);
+
+        String json = hashOps.get(killId);
+        if (StringUtils.isEmpty(json)) {
+            return null;
+        } else {
+            SeckillSkuRedisTo redisTo = JSON.parseObject(json, SeckillSkuRedisTo.class);
+            //校验合法性
+            Long startTime = redisTo.getStartTime();
+            Long endTime = redisTo.getEndTime();
+            long time = new Date().getTime();
+
+            long ttl = endTime - time;
+
+            if (time >= startTime && time <= endTime) {
+                //检验随机码和商品ID
+                String getRandomCode = redisTo.getRandomCode();
+                String skuId = redisTo.getPromotionSessionId() + "_" + redisTo.getSkuId();
+                if (getRandomCode.equals(randomCode) && skuId.equals(killId)) {
+                    //验证购物数量
+                    if (num <= redisTo.getSeckillLimit()) {
+                        //验证个人是否已经买过 幂等性处理
+                        String redisKey = respondVo.getId() + "_" + skuId;
+                        //设置过期时间
+                        Boolean aBoolean = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, num.toString(), ttl, TimeUnit.MILLISECONDS);
+
+                        if (aBoolean) {
+                            //占位成功
+                            RSemaphore semaphore = redissonClient.getSemaphore(SKU_STOCK_SEMAPHORE + getRandomCode);
+                            try {
+                                boolean b = semaphore.tryAcquire(num, 100, TimeUnit.MILLISECONDS);
+                                //秒杀成功
+                                //快速下单，发送MQ
+                                String timeId = IdWorker.getTimeId();
+                                return timeId;
+
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return null;
     }
 
