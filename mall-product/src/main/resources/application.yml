@@ -8,6 +8,11 @@ spring:
     nacos:
       discovery:
         server-addr: 192.168.18.128:8848
+        namespace: 1dd835bf-4c6b-4fdf-9e72-cd57ca92f5df
+#    sentinel:
+#      transport:
+#        dashboard: 192.168.18.128:8858
+#        port: 8719
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
   thymeleaf:
@@ -17,8 +22,8 @@ spring:
     port: 6380
   session:
     store-type: redis
-#  application:
-#    name: mall-product
+  application:
+    name: mall-product
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml
   global-config:
@@ -36,7 +41,11 @@ alibaba:
     secret-key: 2YtztewgkLLDpPRmeGAvGoM5Ey7g5sds2RJ7Zgwbtoy7
     oss:
       endpoint: oss-cn-beijing.aliyuncs.com
-
 #logging:
 #  level:
 #    com.example.mall: error
+
+#开启sentinel的feign支持
+#feign:
+#  sentinel:
+#    enabled: true

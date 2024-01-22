@@ -2,6 +2,7 @@ package com.example.mall.seckill.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.example.common.to.mq.SeckillOrderTo;
 import com.example.common.utils.R;
@@ -14,8 +15,8 @@ import com.example.mall.seckill.to.SeckillSkuRedisTo;
 import com.example.mall.seckill.vo.SeckillSessionWithSkus;
 import com.example.mall.seckill.vo.SeckillSkuVo;
 import com.example.mall.seckill.vo.SkuInfoVo;
-import io.seata.common.util.CollectionUtils;
-import io.seata.common.util.StringUtils;
+
+
 import jodd.util.CollectionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RSemaphore;
@@ -25,6 +26,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
