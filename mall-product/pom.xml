@@ -110,10 +110,10 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <!--sentinel 聚合nacos-->
-        <dependency>
-            <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-datasource-nacos</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.alibaba.csp</groupId>-->
+<!--            <artifactId>sentinel-datasource-nacos</artifactId>-->
+<!--        </dependency>-->
 
         <!--        openfeign-->
         <dependency>

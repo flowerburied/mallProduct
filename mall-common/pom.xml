@@ -89,9 +89,12 @@
             <artifactId>seata-all</artifactId>
             <version>1.7.1</version>
         </dependency>
+        <!--        链路追踪 sleuth && zipkin-->
 
-
-
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-zipkin</artifactId>
+        </dependency>
 
 
     </dependencies>

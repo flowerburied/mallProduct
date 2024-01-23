@@ -13,10 +13,8 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>mall-ware</name>
     <description>mall-ware-serve</description>
-    <properties>
-        <java.version>1.8</java.version>
-        <spring-cloud.version>Hoxton.SR9</spring-cloud.version>
-    </properties>
+
+
     <dependencies>
         <!--导入common-->
         <dependency>
@@ -52,7 +50,14 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
+                <version>Hoxton.SR9</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>2.2.6.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
